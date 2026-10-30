@@ -144,29 +144,36 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spinReverseSlow {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-
-@keyframes logoPulseGlow {
+@keyframes orbFloat1 {
   0%, 100% {
-    opacity: 0.85;
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -25px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes orbFloat2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-35px, 30px) scale(1.1);
+  }
+}
+
+@keyframes subtleWatermarkBreathe {
+  0%, 100% {
+    opacity: 0.08;
     transform: scale(1);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.02);
+    opacity: 0.16;
+    transform: scale(1.03);
   }
-}
-
-.animate-logo-pulse {
-  animation: logoPulseGlow 6s ease-in-out infinite;
 }
 
 @keyframes fadeIn {
