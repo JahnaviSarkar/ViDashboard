@@ -11,7 +11,7 @@ import { ErrorStateView, ErrorType } from './components/ErrorStateView';
 import { VideoPreviewModal } from './features/results/VideoPreviewModal';
 import { createSearch, getSearchDetails, getRecentSearches } from './api/client';
 import { SearchDetails, CandidateResult, SearchItemSummary } from './types';
-import { Sparkles, Film, Compass, ShieldCheck, Zap, Loader2 } from 'lucide-react';
+import { Sparkles, Compass, ShieldCheck, Zap, Loader2 } from 'lucide-react';
 
 export default function App() {
   // Navigation tabs: 'home' | 'shortlist'
@@ -370,23 +370,6 @@ export default function App() {
                       gap: '28px',
                     }}
                   >
-                    <div
-                      style={{
-                        width: '72px',
-                        height: '72px',
-                        borderRadius: '24px',
-                        backgroundColor: 'rgba(242, 97, 156, 0.16)',
-                        border: '1px solid rgba(242, 97, 156, 0.38)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#F2619C',
-                        boxShadow: '0 4px 20px rgba(242, 97, 156, 0.3)',
-                      }}
-                    >
-                      <Film size={36} />
-                    </div>
-
                     <div>
                       <h1
                         style={{
