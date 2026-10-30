@@ -1,4 +1,5 @@
 import { ProductAnalysis } from '../providers/vision/types';
+import { isMarketplace } from './product-resolver.service';
 
 export interface GeneratedQueries {
   instagram: {
@@ -18,6 +19,56 @@ export interface GeneratedQueries {
   };
 }
 
+const STANDALONE_MATERIALS = new Set([
+  'plastic',
+  'metallic',
+  'metal',
+  'polyester',
+  'synthetic',
+  'acrylic',
+  'plasticandmetallic',
+  'stainlesssteel',
+]);
+
+const STYLE_KEYWORDS = [
+  'techwear',
+  'streetwear',
+  'athleisure',
+  'minimalist',
+  'oversized',
+  'y2k',
+  'vintage',
+  'luxury',
+  'workout',
+  'fitness',
+  'running',
+  'gymwear',
+  'glam',
+  'shimmer',
+  'matte',
+  'casual',
+  'lifestyle',
+  'aesthetic',
+  'activewear',
+];
+
+/**
+ * Validates that a hashtag conforms to quality rules:
+ * - 1 to 3 words, length 3 to 25 chars (including '#')
+ * - No material strings
+ * - No "products" suffix or word
+ * - Alphanumeric only
+ */
+export function isValidHashtag(tag: string): boolean {
+  if (!tag || !tag.startsWith('#')) return false;
+  if (tag.length < 3 || tag.length > 25) return false;
+  const lower = tag.toLowerCase();
+  if (lower.includes('products')) return false;
+  const bare = lower.slice(1);
+  if (STANDALONE_MATERIALS.has(bare)) return false;
+  return /^#[a-z0-9]{2,24}$/i.test(tag);
+}
+
 export class QueryGeneratorService {
   /**
    * Generates tailored per-platform queries and expansion tiers from structured product analysis.
@@ -25,83 +76,117 @@ export class QueryGeneratorService {
   generate(analysis: ProductAnalysis, brandName?: string): GeneratedQueries {
     const cleanWord = (w: string) => w.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
-    // 1. Build hashtag list with ranked broad & niche mix
+    // 1. Validate real brand (never use marketplace names like Amazon, Walmart in queries)
+    const isRealBrand = Boolean(brandName && !isMarketplace(brandName));
+    const cleanBrand = isRealBrand ? brandName!.trim() : undefined;
+
+    // 2. Build high-quality, searchable hashtags
     const hashtagsSet = new Set<string>();
 
-    // Niche product hashtags
+    const tryAddTag = (raw: string) => {
+      const cleaned = cleanWord(raw);
+      if (!cleaned) return;
+      const tag = `#${cleaned}`;
+      if (isValidHashtag(tag)) {
+        hashtagsSet.add(tag);
+      }
+    };
+
+    // A. Product type hashtags
     const productSlug = cleanWord(analysis.productType);
-    if (productSlug) hashtagsSet.add(`#${productSlug}`);
+    tryAddTag(productSlug);
 
-    if (brandName) {
-      hashtagsSet.add(`#${cleanWord(brandName)}`);
+    // Split product type into concise 1-2 word concepts if multi-word
+    const productWords = analysis.productType.split(/\s+/).map(cleanWord).filter(Boolean);
+    if (productWords.length > 1) {
+      // Last 2 words (e.g. "tank top", "running shoes")
+      tryAddTag(productWords.slice(-2).join(''));
+      // First 2 words (e.g. "oversized tank", "lip gloss")
+      tryAddTag(productWords.slice(0, 2).join(''));
+      // Main noun (last word)
+      tryAddTag(productWords[productWords.length - 1]);
     }
 
-    for (const logo of analysis.logos) {
-      const cleanLogo = cleanWord(logo);
-      if (cleanLogo) hashtagsSet.add(`#${cleanLogo}`);
+    // B. Real Brand hashtag (only if real product brand)
+    if (cleanBrand) {
+      tryAddTag(cleanBrand);
     }
 
-    // Attribute hashtags (niche)
-    const colorSlug = cleanWord(analysis.dominantColour);
-    const materialSlug = cleanWord(analysis.material);
-    if (colorSlug && productSlug) hashtagsSet.add(`#${colorSlug}${productSlug}`);
-    if (materialSlug) hashtagsSet.add(`#${materialSlug}products`);
+    // C. Category hashtags
+    const categoryParts = analysis.category
+      .split(/[/,&]/)
+      .map((p) => cleanWord(p.trim()))
+      .filter((p) => p.length >= 3 && p.length <= 20);
 
-    for (const attr of analysis.distinguishingAttributes) {
-      const words = attr.split(' ').map(cleanWord).filter((w) => w.length > 2);
-      if (words.length >= 2) {
-        hashtagsSet.add(`#${words.slice(0, 2).join('')}`);
+    for (const cat of categoryParts) {
+      if (!cat.includes('products')) {
+        tryAddTag(cat);
       }
     }
 
-    // Broad category hashtags
-    const categoryParts = analysis.category.split(/[/,&]/).map((p) => cleanWord(p.trim())).filter(Boolean);
-    for (const cat of categoryParts) {
-      if (cat.length > 3) hashtagsSet.add(`#${cat}`);
+    // D. Style & Concept words (from attributes, description, productType)
+    const fullContext = `${analysis.productType} ${analysis.category} ${analysis.shape} ${analysis.distinguishingAttributes.join(' ')}`.toLowerCase();
+    for (const style of STYLE_KEYWORDS) {
+      if (fullContext.includes(style)) {
+        tryAddTag(style);
+      }
     }
 
-    // General high-traffic discovery hashtags
-    hashtagsSet.add('#productfinds');
-    hashtagsSet.add('#musthaves');
+    // E. Distinctive Visible Text & Logos (avoiding marketplace names)
+    for (const logo of analysis.logos) {
+      if (!isMarketplace(logo)) {
+        const logoWords = logo.split(/\s+/).map(cleanWord).filter((w) => w.length > 1);
+        for (const lw of logoWords) {
+          tryAddTag(lw);
+        }
+        if (logoWords.length > 1) {
+          tryAddTag(logoWords.join(''));
+        }
+      }
+    }
 
-    // Filter out banned/generic mock hashtags
-    const bannedHashtags = new Set([
-      '#compositeblendproducts',
-      '#compositeblend',
-      '#ergonomicpremium',
-      '#ergonomicpremiumproducts',
-      '#minimalistaesthetic',
-      '#minimalistaestheticproducts',
-    ]);
+    for (const text of analysis.visibleText) {
+      const textWords = text.split(/\s+/).map(cleanWord).filter((w) => w.length >= 3 && w.length <= 15);
+      for (const tw of textWords) {
+        if (!isMarketplace(tw)) {
+          tryAddTag(tw);
+        }
+      }
+    }
+
+    // General high-traffic discovery hashtags (clean, short, relevant)
+    tryAddTag('productfinds');
+    tryAddTag('musthaves');
 
     const rankedHashtags = Array.from(hashtagsSet)
-      .filter((tag) => !bannedHashtags.has(tag))
+      .filter(isValidHashtag)
       .slice(0, 15);
 
-    // 2. Build Instagram keyword queries
+    // 3. Build Instagram keyword queries (never using marketplace name as brand)
     const igKeywords: string[] = [];
-    if (brandName) igKeywords.push(`${brandName} ${analysis.productType}`);
+    if (cleanBrand) igKeywords.push(`${cleanBrand} ${analysis.productType}`);
     igKeywords.push(analysis.productType);
     igKeywords.push(`${analysis.dominantColour} ${analysis.productType}`);
     igKeywords.push(`${analysis.material} ${analysis.productType}`);
 
-    // 3. Build Meta Ad Library search terms (commercial intent)
+    // 4. Build Meta Ad Library search terms (commercial intent, real brand only)
     const metaSearchTerms: string[] = [];
-    if (brandName) metaSearchTerms.push(brandName);
+    if (cleanBrand) metaSearchTerms.push(cleanBrand);
     metaSearchTerms.push(analysis.productType);
     metaSearchTerms.push(`${analysis.productType} sale`);
     metaSearchTerms.push(`${analysis.dominantColour} ${analysis.productType}`);
 
-    // 4. Build TikTok queries
+    // 5. Build TikTok queries
     const tiktokSearchTerms: string[] = [];
+    if (cleanBrand) tiktokSearchTerms.push(`${cleanBrand} ${analysis.productType}`);
     tiktokSearchTerms.push(`${analysis.productType} review`);
     tiktokSearchTerms.push(`best ${analysis.productType} 2026`);
     tiktokSearchTerms.push(`unboxing ${analysis.productType}`);
 
-    // 5. Build Expansion Tiers
-    // Tier 1 (Exact): Brand + specific product type + primary distinguishing attribute
+    // 6. Build Expansion Tiers
+    // Tier 1 (Exact): Real brand + specific product type + primary distinguishing attribute
     const tier1: string[] = [];
-    if (brandName) tier1.push(`${brandName} ${analysis.productType}`);
+    if (cleanBrand) tier1.push(`${cleanBrand} ${analysis.productType}`);
     tier1.push(analysis.productType);
     if (analysis.distinguishingAttributes.length > 0) {
       tier1.push(`${analysis.productType} ${analysis.distinguishingAttributes[0]}`);

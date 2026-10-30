@@ -14,6 +14,7 @@ export const productAnalysisSchema = z.object({
   attributeConfidence: z.record(z.string(), z.number().min(0).max(1)).default({}),
   isTextDerived: z.boolean().default(false),
   isMock: z.boolean().default(false),
+  modelUsed: z.string().optional(),
 });
 
 export type ProductAnalysis = z.infer<typeof productAnalysisSchema>;

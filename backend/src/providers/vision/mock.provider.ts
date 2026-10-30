@@ -94,6 +94,7 @@ export class MockVisionProvider implements VisionProvider {
       },
       isTextDerived: !hasImage,
       isMock: true,
+      modelUsed: 'mock',
     };
 
     return productAnalysisSchema.parse(rawAnalysis);

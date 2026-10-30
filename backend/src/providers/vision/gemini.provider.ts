@@ -101,8 +101,9 @@ export class GeminiVisionProvider implements VisionProvider {
     while (attempt < maxAttempts) {
       attempt++;
       try {
-        const responseJsonText = await this.callGeminiApi(key, parts, attempt > 1 ? lastError?.message : undefined);
-        const parsed = this.parseAndValidateJson(responseJsonText, !hasImage);
+        const { textContent, modelUsed } = await this.callGeminiApi(key, parts, attempt > 1 ? lastError?.message : undefined);
+        const parsed = this.parseAndValidateJson(textContent, !hasImage);
+        parsed.modelUsed = modelUsed;
         return parsed;
       } catch (err: any) {
         lastError = err;
@@ -120,10 +121,14 @@ export class GeminiVisionProvider implements VisionProvider {
     key: string,
     parts: Array<Record<string, unknown>>,
     repairFeedback?: string
-  ): Promise<string> {
-    let model = this.modelName || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  ): Promise<{ textContent: string; modelUsed: string }> {
+    const configuredModel = this.modelName || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+    let model = configuredModel;
     if (model === 'gemini-2.5-flash') {
-      logger.warn(`Model "${model}" is deprecated by Google Gemini API (returns 404). Upgrading to "gemini-3.5-flash-lite"`);
+      logger.warn(
+        { configuredModel: 'gemini-2.5-flash', actualModel: 'gemini-3.5-flash-lite' },
+        'Gemini provider fell back to a different model than GEMINI_MODEL: gemini-2.5-flash is deprecated by Google Gemini API, using gemini-3.5-flash-lite'
+      );
       model = 'gemini-3.5-flash-lite';
     }
 
@@ -163,8 +168,12 @@ export class GeminiVisionProvider implements VisionProvider {
 
     // Fallback if model is deprecated (e.g. 2.5-flash returning 404 in current Gemini API) or temporary 503
     if (!res.ok && (res.status === 404 || res.status === 503) && model !== 'gemini-3.5-flash-lite') {
-      logger.warn(`Configured model ${model} returned HTTP ${res.status}. Automatically falling back to recommended gemini-3.5-flash-lite`);
-      model = 'gemini-3.5-flash-lite';
+      const fallbackModel = 'gemini-3.5-flash-lite';
+      logger.warn(
+        { configuredModel, actualModel: fallbackModel, status: res.status },
+        `Gemini provider fell back to a different model than GEMINI_MODEL: ${model} returned HTTP ${res.status}, falling back to ${fallbackModel}`
+      );
+      model = fallbackModel;
       url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
       res = await fetch(url, {
         method: 'POST',
@@ -189,7 +198,7 @@ export class GeminiVisionProvider implements VisionProvider {
       throw new Error('Gemini API returned an empty response body or blocked output');
     }
 
-    return textContent;
+    return { textContent, modelUsed: model };
   }
 
   private parseAndValidateJson(rawText: string, forceTextDerived: boolean): ProductAnalysis {

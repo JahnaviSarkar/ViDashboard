@@ -21,6 +21,37 @@ export interface ResolvedProduct {
 
 export const ERROR_PAGE_REGEX = /404|not found|access denied|captcha|robot check|just a moment/i;
 
+export const MARKETPLACES = [
+  'amazon',
+  'flipkart',
+  'myntra',
+  'ebay',
+  'walmart',
+  'etsy',
+  'aliexpress',
+  'target',
+  'bestbuy',
+  'costco',
+  'shein',
+  'temu',
+  'ajio',
+  'tatacliq',
+  'nykaa',
+];
+
+export function isMarketplace(nameOrDomain?: string): boolean {
+  if (!nameOrDomain) return false;
+  const clean = nameOrDomain.trim().toLowerCase();
+  const host = clean.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  const parts = host.split('.');
+  for (const mp of MARKETPLACES) {
+    if (parts.includes(mp) || clean === mp || clean.startsWith(mp + ' ') || clean.endsWith(' ' + mp)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function normalizeUrl(rawUrl: string): string {
   try {
     const parsed = new URL(rawUrl);
@@ -231,13 +262,35 @@ export class ProductResolverService {
           if (!extracted.title || extracted.title === 'Product') extracted.title = enrichedShopify.title || extracted.title;
           if (!extracted.description) extracted.description = enrichedShopify.description;
           if (!extracted.imageUrl) extracted.imageUrl = enrichedShopify.imageUrl;
-          if (!extracted.brand) extracted.brand = enrichedShopify.brand;
-          if (enrichedShopify.price !== undefined) extracted.price = enrichedShopify.price;
+          if (enrichedShopify.brand && !isMarketplace(enrichedShopify.brand)) {
+            extracted.brand = enrichedShopify.brand;
+          }
+
+          // PRICE CONSISTENCY & RELIABILITY CHECK:
+          // Shopify .js endpoint price is in cents in the store's primary base currency (usually USD).
+          // If the page already extracted a localized price and currency from the HTML (e.g. INR 3100),
+          // do NOT overwrite it with unlocalized cents from the .js endpoint!
+          if (extracted.price !== undefined && extracted.currency) {
+            // If the currency matches USD or no localized difference, enriched price can be used if cleaner
+            if (extracted.currency === 'USD' && enrichedShopify.price !== undefined) {
+              extracted.price = enrichedShopify.price;
+            }
+            // For non-USD localized sessions (e.g. INR 3100), preserve the matched HTML price and currency.
+          } else if (enrichedShopify.price !== undefined) {
+            extracted.price = enrichedShopify.price;
+            if (!extracted.currency) extracted.currency = 'USD';
+          }
+
           extracted.metadata.shopify = enrichedShopify.metadata;
         }
       } catch (err) {
         logger.debug({ err }, 'Shopify JSON fallback skipped or failed');
       }
+    }
+
+    // Reliability check: If price is invalid, negative or NaN, return as undefined (null)
+    if (extracted.price !== undefined && (isNaN(extracted.price) || extracted.price <= 0)) {
+      extracted.price = undefined;
     }
 
     if (!extracted.title) {
@@ -463,8 +516,30 @@ export class ProductResolverService {
       );
     }
 
-    // Brand resolution
-    const finalBrand = jsonLdBrand || ogBrand || (amazonTitle ? 'Amazon' : undefined);
+    // Brand resolution:
+    // Never use a retailer or marketplace name (Amazon, Flipkart, Myntra, eBay, Walmart, Etsy, etc.) as the product brand.
+    // Take the brand only from JSON-LD brand, Shopify vendor, or og:site_name when the domain is a brand-owned site.
+    // For marketplaces, leave brand empty and let the Image Brain infer it from visible logos and text on the product.
+    let finalBrand: string | undefined;
+    const isMarketplaceSite = isMarketplace(parsedHostname) || isMarketplace(domainBrand);
+
+    if (isMarketplaceSite) {
+      // Marketplace domain: never assign marketplace name as brand
+      if (jsonLdBrand && !isMarketplace(jsonLdBrand)) {
+        finalBrand = jsonLdBrand.trim();
+      } else {
+        finalBrand = undefined; // Leave empty for marketplaces!
+      }
+    } else {
+      // Brand-owned site
+      if (jsonLdBrand && !isMarketplace(jsonLdBrand)) {
+        finalBrand = jsonLdBrand.trim();
+      } else if (ogBrand && !isMarketplace(ogBrand)) {
+        finalBrand = ogBrand.trim();
+      } else if (siteName && !isMarketplace(siteName)) {
+        finalBrand = siteName.trim();
+      }
+    }
 
     // REQUIREMENT 3: TITLE QUALITY
     // Prefer JSON-LD Product name, then og:title, then h1, and reject titles that are only the brand or site name.

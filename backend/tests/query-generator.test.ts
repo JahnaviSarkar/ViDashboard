@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { QueryGeneratorService } from '../src/services/query-generator.service';
+import { QueryGeneratorService, isValidHashtag } from '../src/services/query-generator.service';
 import { ProductAnalysis } from '../src/providers/vision/types';
 
 describe('Query Generation Service and Expansion Tiers', () => {
@@ -83,5 +83,80 @@ describe('Query Generation Service and Expansion Tiers', () => {
     expect(queries.instagram.hashtags).not.toContain('#compositeblend');
     expect(queries.instagram.hashtags).not.toContain('#ergonomicpremium');
     expect(queries.instagram.hashtags).not.toContain('#ergonomicpremiumproducts');
+  });
+
+  describe('Hashtag Quality & Validation', () => {
+    it('accepts short, searchable concept hashtags', () => {
+      expect(isValidHashtag('#lipgloss')).toBe(true);
+      expect(isValidHashtag('#fentybeauty')).toBe(true);
+      expect(isValidHashtag('#oversizedtank')).toBe(true);
+      expect(isValidHashtag('#techwear')).toBe(true);
+      expect(isValidHashtag('#dollhouse')).toBe(true);
+    });
+
+    it('rejects hashtags longer than 25 characters', () => {
+      expect(isValidHashtag('#verylongunsearchablehashtagname12345')).toBe(false);
+      expect(isValidHashtag('#thisiswaytoolongtoeverworkasahashtag')).toBe(false);
+      expect(isValidHashtag('#twentyfivecharacterstag1')).toBe(true); // length 25
+      expect(isValidHashtag('#twentyfivecharacterstag12')).toBe(false); // length 26
+    });
+
+    it('rejects hashtags containing the word "products"', () => {
+      expect(isValidHashtag('#plasticandmetalliccapproducts')).toBe(false);
+      expect(isValidHashtag('#beautymakeupproducts')).toBe(false);
+      expect(isValidHashtag('#newproducts')).toBe(false);
+      expect(isValidHashtag('#productfinds')).toBe(true); // 'product' without 'products' is ok
+    });
+
+    it('rejects standalone material hashtags', () => {
+      expect(isValidHashtag('#plastic')).toBe(false);
+      expect(isValidHashtag('#metallic')).toBe(false);
+      expect(isValidHashtag('#polyester')).toBe(false);
+      expect(isValidHashtag('#stainlesssteel')).toBe(false);
+    });
+  });
+
+  describe('Marketplace Name Exclusion in Brand and Queries', () => {
+    it('never includes retailer or marketplace name in queries if passed as brand', () => {
+      const marketplaceBrands = ['Amazon', 'Flipkart', 'Myntra', 'Walmart', 'eBay', 'Etsy', 'Amazon India'];
+
+      for (const mb of marketplaceBrands) {
+        const queries = generator.generate(sampleAnalysis, mb);
+
+        // Hashtags must not contain marketplace name
+        const lowerMb = mb.toLowerCase().replace(/[^a-z0-9]/g, '');
+        for (const tag of queries.instagram.hashtags) {
+          expect(tag.toLowerCase()).not.toContain(lowerMb);
+        }
+
+        // Keywords must not contain marketplace name
+        for (const kw of queries.instagram.keywords) {
+          expect(kw.toLowerCase()).not.toContain(mb.toLowerCase());
+        }
+
+        // Meta search terms must not contain marketplace name
+        for (const term of queries.meta.searchTerms) {
+          expect(term.toLowerCase()).not.toContain(mb.toLowerCase());
+        }
+
+        // TikTok search terms must not contain marketplace name
+        for (const term of queries.tiktok.searchTerms) {
+          expect(term.toLowerCase()).not.toContain(mb.toLowerCase());
+        }
+
+        // Expansion tiers must not contain marketplace name
+        for (const tier of queries.expansionTiers.tier1) {
+          expect(tier.toLowerCase()).not.toContain(mb.toLowerCase());
+        }
+      }
+    });
+
+    it('includes real brand in queries and hashtags', () => {
+      const queries = generator.generate(sampleAnalysis, 'Fenty Beauty');
+      expect(queries.instagram.hashtags).toContain('#fentybeauty');
+      expect(queries.instagram.keywords).toContain('Fenty Beauty Wooden Miniature Dollhouse');
+      expect(queries.meta.searchTerms).toContain('Fenty Beauty');
+      expect(queries.expansionTiers.tier1).toContain('Fenty Beauty Wooden Miniature Dollhouse');
+    });
   });
 });

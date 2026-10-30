@@ -49,6 +49,8 @@ describe('Product Resolver Service & HTML Fixtures', () => {
     expect(result.title).toContain('SonicPro Wireless Over-Ear Active Noise Cancelling Headphones');
     expect(result.imageUrl).toBeDefined();
     expect(result.imageUrl).toContain('71xyz');
+    // REQUIREMENT 1: Never use a retailer or marketplace name (Amazon, Flipkart, etc.) as the product brand
+    expect(result.brand).toBeUndefined();
   });
 
   it('extracts product metadata from generic OpenGraph HTML fixture', () => {
@@ -219,6 +221,55 @@ describe('Product Resolver Service & HTML Fixtures', () => {
 
       const result = resolver.extractFromHtml(html, 'https://example.com/products/space-one');
       expect(result.title).toBe('Soundcore Space One Pro Wireless Headphones');
+    });
+
+    it('rejects marketplace names as brands and leaves brand empty for marketplaces', () => {
+      const amazonMarketplaceHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Amazon.com: Noise Cancelling Earbuds</title>
+            <meta property="og:title" content="Wireless Noise Cancelling Earbuds" />
+            <meta property="og:site_name" content="Amazon" />
+            <meta property="og:type" content="product" />
+            <meta property="product:price:amount" content="49.99" />
+          </head>
+          <body>
+            <h1>Wireless Noise Cancelling Earbuds</h1>
+            <button name="add">Add to Cart</button>
+          </body>
+        </html>
+      `;
+
+      const result = resolver.extractFromHtml(amazonMarketplaceHtml, 'https://www.amazon.com/dp/B09ABCDE');
+      // Must not be 'Amazon'!
+      expect(result.brand).toBeUndefined();
+    });
+
+    it('allows real brand from brand-owned sites and JSON-LD', () => {
+      const brandOwnedHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Fenty Glow Lip Luminizer</title>
+            <meta property="og:title" content="Gloss Bomb Universal Lip Luminizer" />
+            <meta property="og:site_name" content="Fenty Beauty" />
+            <meta property="og:type" content="product" />
+            <meta property="product:brand" content="Fenty Beauty" />
+            <meta property="product:price:amount" content="21.00" />
+            <meta property="product:price:currency" content="USD" />
+          </head>
+          <body>
+            <h1>Gloss Bomb Universal Lip Luminizer</h1>
+            <button name="add">Add to Cart</button>
+          </body>
+        </html>
+      `;
+
+      const result = resolver.extractFromHtml(brandOwnedHtml, 'https://fentybeauty.com/products/gloss-bomb');
+      expect(result.brand).toBe('Fenty Beauty');
+      expect(result.price).toBe(21.0);
+      expect(result.currency).toBe('USD');
     });
   });
 
