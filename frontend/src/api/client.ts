@@ -42,8 +42,10 @@ export async function createSearch(params: CreateSearchParams): Promise<CreateSe
   const payload: Record<string, any> = {
     sources: params.sources,
     minMatchThreshold: params.minMatchThreshold ?? 60,
-    mode: params.mode || 'live',
   };
+  if (params.mode) {
+    payload.mode = params.mode;
+  }
 
   if (params.inputType === 'product_url') {
     payload.url = params.url;

@@ -65,18 +65,42 @@ export class InstagramCollector implements Collector {
       'viral_picks',
     ];
 
+    const localThumbs = [
+      'instagram_2706863869879468651.jpg',
+      'instagram_2724491944403426662.jpg',
+      'instagram_3013554546328431752.jpg',
+      'instagram_3304444182461907442.jpg',
+      'instagram_3593209001224020651.jpg',
+      'instagram_3661261626196574343.jpg',
+      'instagram_3697659353774630804.jpg',
+      'instagram_3698459817869042831.jpg',
+      'instagram_3720065662895361908.jpg',
+      'instagram_3875419381886357947.jpg',
+      'instagram_3897775066338888268.jpg',
+      'instagram_3898611466077068451.jpg',
+      'instagram_3912790798953307020.jpg',
+      'instagram_3915835296570515795.jpg',
+      'instagram_3920589719163226004.jpg',
+      'instagram_3921708589096489675.jpg',
+      'instagram_3922219490497276314.jpg',
+      'instagram_3938951595568123378.jpg',
+      'instagram_3940493332317969199.jpg',
+      'instagram_3954253353932565377.jpg',
+    ];
+
     for (let i = 0; i < targetCount; i++) {
       const id = `mock_ig_reel_${(i + 1).toString().padStart(3, '0')}`;
       const tag1 = hashtags[i % hashtags.length];
       const tag2 = hashtags[(i + 1) % hashtags.length];
       const keyword = keywords[i % keywords.length];
       const author = creators[i % creators.length];
+      const thumbFilename = localThumbs[i % localThumbs.length];
 
       candidates.push({
         platform: 'instagram',
         platformVideoId: id,
         canonicalUrl: `https://www.instagram.com/reel/${id}/`,
-        thumbnailUrl: `https://images.example.com/mock/thumbnails/${id}.jpg`,
+        thumbnailUrl: `/storage/thumbnails/${thumbFilename}`,
         mediaUrl: `https://video.example.com/mock/reels/${id}.mp4`,
         caption: `Obsessed with this! Real review of the ${keyword}. Check this out ${tag1} ${tag2} #viral #foryou`,
         author: `@${author}`,

@@ -21,7 +21,21 @@ export class MockVisionProvider implements VisionProvider {
     const logos: string[] = [];
     const visibleText: string[] = [];
 
-    if (lower.includes('doll') || lower.includes('toy') || lower.includes('wooden') || lower.includes('play')) {
+    if (lower.includes('balance') && lower.includes('board')) {
+      category = 'Toys & Games / Active Play & Waldorf Toys';
+      productType = 'Curved Wooden Balance Board';
+      dominantColour = 'Natural Birch Wood';
+      secondaryColours = ['Felt Wool Underlay', 'Natural Beech'];
+      material = 'FSC-Certified Curved Birch Plywood';
+      shape = 'Curved rocker arch with smooth beveled safety edges';
+      distinguishingAttributes.push(
+        'Smooth chamfered edges',
+        'Non-toxic child-safe varnish',
+        'Montessori & Waldorf active play rocker'
+      );
+      logos.push('Kinderfeets');
+      visibleText.push('Balance Board');
+    } else if (lower.includes('doll') || lower.includes('toy') || lower.includes('wooden') || lower.includes('play')) {
       category = 'Toys & Games / Pretend Play';
       productType = lower.includes('dollhouse') ? 'Wooden Miniature Dollhouse' : 'Artisan Wooden Toy';
       dominantColour = lower.includes('pink') ? 'Rose Blossom' : 'Natural Beech Wood';

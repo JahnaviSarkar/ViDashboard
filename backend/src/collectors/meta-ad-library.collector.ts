@@ -94,17 +94,41 @@ export class MetaAdLibraryCollector implements Collector {
       'Over 10,000 5-star reviews. Free shipping worldwide on orders today.',
     ];
 
+    const localThumbs = [
+      'meta_1041022068954000.jpg',
+      'meta_1052230050775865.jpg',
+      'meta_1118313677203787.jpg',
+      'meta_1214014497539869.jpg',
+      'meta_1241606678069376.jpg',
+      'meta_1266637455530440.jpg',
+      'meta_1309947944597670.jpg',
+      'meta_1330472295881394.jpg',
+      'meta_1397617041778492.jpg',
+      'meta_1400357895434601.jpg',
+      'meta_1421472709368733.jpg',
+      'meta_1424753659352272.jpg',
+      'meta_1437475274814783.jpg',
+      'meta_1447815677084521.jpg',
+      'meta_1450748213065627.jpg',
+      'meta_1561399651530550.jpg',
+      'meta_1571420414072622.jpg',
+      'meta_1603869493985198.jpg',
+      'meta_1619983686396810.jpg',
+      'meta_1689889301694357.jpg',
+    ];
+
     for (let i = 0; i < targetCount; i++) {
       const adId = `mock_meta_ad_${(i + 1).toString().padStart(3, '0')}`;
       const term = searchTerms[i % searchTerms.length];
       const pageName = brandPages[i % brandPages.length];
       const hook = hooks[i % hooks.length];
+      const thumbFilename = localThumbs[i % localThumbs.length];
 
       candidates.push({
         platform: 'meta',
         platformVideoId: adId,
         canonicalUrl: `https://www.facebook.com/ads/library/?id=${adId}`,
-        thumbnailUrl: `https://images.example.com/mock/ad_thumbs/${adId}.jpg`,
+        thumbnailUrl: `/storage/thumbnails/${thumbFilename}`,
         mediaUrl: `https://video.example.com/mock/ads/${adId}.mp4`,
         caption: `${hook}\n\nDiscover the all-new ${term}. Tap Shop Now to claim the limited seasonal bundle.`,
         author: pageName,

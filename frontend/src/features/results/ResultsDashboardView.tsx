@@ -238,22 +238,37 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
         <Card padding="lg" style={{ textAlign: 'center', padding: '60px 24px' }}>
           <AlertTriangle size={36} color="#93ABD9" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#292633', marginBottom: '8px' }}>
-            No matching videos match the current filters
+            {previouslySeenFiltered > 0 && !showPreviouslySeen
+              ? `${previouslySeenFiltered} Candidate Videos Filtered as Previously Seen`
+              : 'No matching videos match the current filters'}
           </h3>
-          <p style={{ color: '#77717F', fontSize: '0.875rem', maxWidth: '420px', margin: '0 auto 20px' }}>
-            Try lowering the score threshold slider or resetting keyword filters to view more candidates.
+          <p style={{ color: '#77717F', fontSize: '0.875rem', maxWidth: '460px', margin: '0 auto 20px' }}>
+            {previouslySeenFiltered > 0 && !showPreviouslySeen
+              ? `All candidate videos from this search were detected in cross-search deduplication and are tagged as "Seen before". Click below to reveal them.`
+              : 'Try lowering the score threshold slider or resetting keyword filters to view more candidates.'}
           </p>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              setMinScore(50);
-              setSearchQuery('');
-              setSelectedPlatform('all');
-            }}
-          >
-            Reset All Filters
-          </Button>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            {previouslySeenFiltered > 0 && !showPreviouslySeen && (
+              <Button
+                size="sm"
+                variant="raspberry"
+                onClick={() => setShowPreviouslySeen(true)}
+              >
+                Show {previouslySeenFiltered} Previously Seen Videos
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setMinScore(50);
+                setSearchQuery('');
+                setSelectedPlatform('all');
+              }}
+            >
+              Reset Filters
+            </Button>
+          </div>
         </Card>
       ) : (
         <div
