@@ -143,7 +143,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
               gap: '4px',
             }}
           >
-            {mode === 'live' ? '🟢 Live API Mode' : '🟡 Mock Offline Mode'}
+            {mode === 'live' ? 'Live API Mode' : 'Mock Offline Mode'}
           </button>
         </div>
 

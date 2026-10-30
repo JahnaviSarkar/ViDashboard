@@ -29,7 +29,7 @@ export const MockDataBanner: React.FC<MockDataBannerProps> = ({ isMock }) => {
     >
       <AlertTriangle size={18} color="#EDE986" style={{ flexShrink: 0 }} />
       <span>
-        ⚡ <strong style={{ color: '#EDE986' }}>MOCK DATA BANNER:</strong> Displaying simulated candidate video items (MODE=mock). Set <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>MODE=live</code> in <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>.env</code> with real API keys for production platform collection.
+        <strong style={{ color: '#EDE986' }}>MOCK DATA BANNER:</strong> Displaying simulated candidate video items (MODE=mock). Set <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>MODE=live</code> in <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>.env</code> with real API keys for production platform collection.
       </span>
     </div>
   );
