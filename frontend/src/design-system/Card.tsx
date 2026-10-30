@@ -26,10 +26,10 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const baseStyles: React.CSSProperties = {
-    backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    border: border ? '1px solid var(--border-subtle)' : 'none',
-    boxShadow: 'var(--shadow-sm)',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 'var(--radius-card)',
+    border: border ? '1px solid #E9E3ED' : 'none',
+    boxShadow: 'var(--shadow-card)',
     padding: getPadding(),
     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
     position: 'relative',

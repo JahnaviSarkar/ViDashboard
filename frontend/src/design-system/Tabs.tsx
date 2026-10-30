@@ -18,18 +18,18 @@ export const Tabs: React.FC<TabsProps> = ({
   tabs,
   activeTab,
   onChange,
-  variant = 'pill',
+  variant: _variant = 'pill',
 }) => {
   return (
     <div
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        padding: variant === 'pill' ? '4px' : '0',
-        backgroundColor: variant === 'pill' ? 'var(--bg-subtle)' : 'transparent',
-        borderRadius: 'var(--radius-lg)',
+        padding: '4px',
+        backgroundColor: '#F5F2F7',
+        borderRadius: 'var(--radius-pill)',
         gap: '4px',
-        borderBottom: variant === 'underline' ? '1px solid var(--border-subtle)' : 'none',
+        border: '1px solid #E9E3ED',
         width: '100%',
         maxWidth: 'fit-content',
       }}
@@ -44,17 +44,16 @@ export const Tabs: React.FC<TabsProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: variant === 'pill' ? '8px 16px' : '10px 18px',
+              gap: '6px',
+              padding: '6px 16px',
               border: 'none',
-              borderRadius: variant === 'pill' ? 'var(--radius-md)' : '0',
-              borderBottom: variant === 'underline' && isActive ? '2px solid var(--primary)' : '2px solid transparent',
-              backgroundColor: variant === 'pill' && isActive ? 'var(--bg-card)' : 'transparent',
-              color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-              fontWeight: isActive ? 700 : 500,
-              fontSize: '0.875rem',
+              borderRadius: 'var(--radius-pill)',
+              backgroundColor: isActive ? '#FFFFFF' : 'transparent',
+              color: isActive ? '#292633' : '#77717F',
+              fontWeight: isActive ? 800 : 600,
+              fontSize: '0.8125rem',
               cursor: 'pointer',
-              boxShadow: variant === 'pill' && isActive ? 'var(--shadow-sm)' : 'none',
+              boxShadow: isActive ? '0 2px 8px rgba(147, 171, 217, 0.15)' : 'none',
               transition: 'all 0.15s ease',
               fontFamily: 'var(--font-sans)',
             }}
@@ -64,12 +63,12 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.badge !== undefined && (
               <span
                 style={{
-                  fontSize: '0.75rem',
-                  padding: '1px 6px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: isActive ? 'var(--primary-subtle)' : 'var(--border-subtle)',
-                  color: isActive ? 'var(--primary-text)' : 'var(--text-muted)',
-                  fontWeight: 600,
+                  fontSize: '0.6875rem',
+                  padding: '2px 6px',
+                  borderRadius: 'var(--radius-pill)',
+                  backgroundColor: isActive ? '#E7BEF8' : '#E9E3ED',
+                  color: isActive ? '#6B2B85' : '#77717F',
+                  fontWeight: 700,
                 }}
               >
                 {tab.badge}

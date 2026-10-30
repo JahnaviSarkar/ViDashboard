@@ -1,14 +1,14 @@
 import React from 'react';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'instagram' | 'meta' | 'frames' | 'thumbnail' | 'caption_only';
+  variant?: 'raspberry' | 'lilac' | 'blueberry' | 'lemon' | 'neutral' | 'success' | 'warning' | 'danger';
   size?: 'sm' | 'md';
   icon?: React.ReactNode;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
   children,
-  variant = 'default',
+  variant = 'neutral',
   size = 'md',
   icon,
   style,
@@ -17,43 +17,33 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   const getVariantStyles = (): React.CSSProperties => {
     switch (variant) {
+      case 'raspberry':
+        return { backgroundColor: '#FDE8F1', color: '#B82869', border: '1px solid #F9A8CE' };
+      case 'lilac':
+        return { backgroundColor: '#F8EEFC', color: '#6B2B85', border: '1px solid #E7BEF8' };
+      case 'blueberry':
+        return { backgroundColor: '#EBF1F9', color: '#314F85', border: '1px solid #93ABD9' };
+      case 'lemon':
+        return { backgroundColor: '#FCFBE8', color: '#6E6B15', border: '1px solid #EDE986' };
       case 'success':
-        return { backgroundColor: 'var(--success-subtle)', color: 'var(--success-text)', border: '1px solid var(--success)' };
+        return { backgroundColor: '#D1FAE5', color: '#065F46', border: '1px solid #6EE7B7' };
       case 'warning':
-        return { backgroundColor: 'var(--warning-subtle)', color: 'var(--warning-text)', border: '1px solid var(--warning)' };
+        return { backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' };
       case 'danger':
-        return { backgroundColor: 'var(--danger-subtle)', color: 'var(--danger-text)', border: '1px solid var(--danger)' };
-      case 'info':
-        return { backgroundColor: 'var(--info-subtle)', color: 'var(--info-text)', border: '1px solid var(--info)' };
-      case 'instagram':
-        return {
-          background: 'var(--instagram-gradient)',
-          color: '#ffffff',
-          fontWeight: 700,
-          border: 'none',
-          boxShadow: '0 2px 4px rgba(225, 48, 108, 0.25)',
-        };
-      case 'meta':
-        return { backgroundColor: 'var(--meta-blue-subtle)', color: 'var(--meta-blue)', border: '1px solid var(--meta-blue)', fontWeight: 700 };
-      case 'frames':
-        return { backgroundColor: 'var(--evidence-frames-subtle)', color: 'var(--evidence-frames)', border: '1px solid var(--evidence-frames)' };
-      case 'thumbnail':
-        return { backgroundColor: 'var(--evidence-thumbnail-subtle)', color: 'var(--evidence-thumbnail)', border: '1px solid var(--evidence-thumbnail)' };
-      case 'caption_only':
-        return { backgroundColor: 'var(--evidence-caption-subtle)', color: 'var(--evidence-caption)', border: '1px solid var(--evidence-caption)' };
-      case 'default':
+        return { backgroundColor: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5' };
+      case 'neutral':
       default:
-        return { backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' };
+        return { backgroundColor: '#FAF8F7', color: '#77717F', border: '1px solid #E9E3ED' };
     }
   };
 
   const getSizeStyles = (): React.CSSProperties => {
     switch (size) {
       case 'sm':
-        return { padding: '2px 8px', fontSize: '0.75rem', borderRadius: 'var(--radius-full)' };
+        return { padding: '2px 8px', fontSize: '0.75rem' };
       case 'md':
       default:
-        return { padding: '4px 10px', fontSize: '0.8125rem', borderRadius: 'var(--radius-full)' };
+        return { padding: '4px 10px', fontSize: '0.8125rem' };
     }
   };
 
@@ -62,8 +52,9 @@ export const Badge: React.FC<BadgeProps> = ({
     alignItems: 'center',
     gap: '4px',
     fontWeight: 600,
-    lineHeight: 1,
+    lineHeight: 1.2,
     whiteSpace: 'nowrap',
+    borderRadius: 'var(--radius-pill)',
     fontFamily: 'var(--font-sans)',
     ...getVariantStyles(),
     ...getSizeStyles(),
@@ -71,7 +62,7 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   return (
-    <span style={baseStyles} className={`badge-${variant} ${className}`} {...props}>
+    <span style={baseStyles} className={`badge ${className}`} {...props}>
       {icon}
       {children}
     </span>

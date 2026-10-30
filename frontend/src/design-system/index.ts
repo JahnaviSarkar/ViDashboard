@@ -1,4 +1,3 @@
-export * from './theme-context';
 export * from './Button';
 export * from './Badge';
 export * from './Card';

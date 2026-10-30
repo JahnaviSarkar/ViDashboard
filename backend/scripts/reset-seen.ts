@@ -23,3 +23,4 @@ if (process.argv[1]?.includes('reset-seen')) {
       process.exit(1);
     });
 }
+

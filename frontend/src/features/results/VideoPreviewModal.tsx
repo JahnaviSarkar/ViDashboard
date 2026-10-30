@@ -51,7 +51,7 @@ export const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Badge
-            variant={isInstagram ? 'instagram' : 'meta'}
+            variant={isInstagram ? 'lilac' : 'blueberry'}
             icon={isInstagram ? <Instagram size={14} /> : <Flame size={14} />}
           >
             {isInstagram ? 'Instagram Reel' : 'Meta Ad Library'}
@@ -202,7 +202,7 @@ export const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({
           <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={handleCopyId}
               leftIcon={copied ? <Check size={14} /> : <Copy size={14} />}
               style={{ flex: 1 }}
@@ -218,7 +218,7 @@ export const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({
             >
               <Button
                 size="sm"
-                variant="primary"
+                variant="raspberry"
                 leftIcon={<ExternalLink size={14} />}
                 style={{ width: '100%' }}
               >

@@ -7,7 +7,9 @@ export default defineConfig({
     testTimeout: 60000,
     hookTimeout: 60000,
     fileParallelism: false,
-    include: ['backend/tests/**/*.test.ts'],
-    setupFiles: ['backend/tests/setup.ts'],
+    include: ['backend/tests/**/*.test.ts', 'tests/**/*.test.ts'],
+    setupFiles: [
+      process.cwd().endsWith('backend') ? 'tests/setup.ts' : 'backend/tests/setup.ts',
+    ],
   },
 });

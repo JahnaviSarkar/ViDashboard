@@ -107,7 +107,15 @@ describe('ResultsDashboard Filters & Controls', () => {
 
   it('renders all candidates scoring above initial threshold (60%)', () => {
     const onNewSearch = vi.fn();
-    render(<ResultsDashboardView searchDetails={mockSearchDetails} onNewSearch={onNewSearch} />);
+    const onToggleShortlist = vi.fn();
+    render(
+      <ResultsDashboardView
+        searchDetails={mockSearchDetails}
+        onNewSearch={onNewSearch}
+        shortlist={[]}
+        onToggleShortlist={onToggleShortlist}
+      />
+    );
 
     // Candidate 1 (92%) and Candidate 2 (74%) should be visible; Candidate 3 (45%) is filtered out
     expect(screen.getByText('92%')).toBeDefined();
@@ -117,10 +125,18 @@ describe('ResultsDashboard Filters & Controls', () => {
 
   it('filters candidates by source tab', () => {
     const onNewSearch = vi.fn();
-    render(<ResultsDashboardView searchDetails={mockSearchDetails} onNewSearch={onNewSearch} />);
+    const onToggleShortlist = vi.fn();
+    render(
+      <ResultsDashboardView
+        searchDetails={mockSearchDetails}
+        onNewSearch={onNewSearch}
+        shortlist={[]}
+        onToggleShortlist={onToggleShortlist}
+      />
+    );
 
-    // Click Meta Ads tab
-    const metaTab = screen.getByText('Meta Ads');
+    // Click Meta Ad Library pill
+    const metaTab = screen.getByText('Meta Ad Library');
     fireEvent.click(metaTab);
 
     // Only Meta candidate should remain (74%), Instagram (92%) should not be in the grid
@@ -130,7 +146,15 @@ describe('ResultsDashboard Filters & Controls', () => {
 
   it('filters candidates by keyword search text', () => {
     const onNewSearch = vi.fn();
-    render(<ResultsDashboardView searchDetails={mockSearchDetails} onNewSearch={onNewSearch} />);
+    const onToggleShortlist = vi.fn();
+    render(
+      <ResultsDashboardView
+        searchDetails={mockSearchDetails}
+        onNewSearch={onNewSearch}
+        shortlist={[]}
+        onToggleShortlist={onToggleShortlist}
+      />
+    );
 
     const searchInput = screen.getByPlaceholderText('Search keywords, authors, or captions in results...');
     fireEvent.change(searchInput, { target: { value: 'clearance' } });
@@ -140,3 +164,4 @@ describe('ResultsDashboard Filters & Controls', () => {
     expect(screen.queryByText('92%')).toBeNull();
   });
 });
+

@@ -38,6 +38,9 @@ scratch/
 temp/
 tmp/
 *.tmp
+*.db
+*.sqlite
+*.sqlite3
 postgres_data/
 embedded-postgres-data/
 reference/

@@ -1,139 +1,52 @@
 /* ==========================================================================
-   ViDashboard Design System Tokens & Base Styles
-   Supports Light & Dark Modes via [data-theme="dark"]
+   ViDashboard Design System Tokens - Pastel A-Toys Theme
    ========================================================================== */
 
 :root {
-  /* Color Palette - Modern Glass & Indigo Theme (Light) */
-  --bg-app: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
-  --bg-subtle: #f1f5f9;
-  --bg-input: #ffffff;
-  --bg-modal: #ffffff;
-  --bg-overlay: rgba(15, 23, 42, 0.65);
+  /* Pastel A-Toys Brand Tokens */
+  --raspberry-rose: #F2619C;
+  --soft-lilac: #E7BEF8;
+  --blueberry-milk: #93ABD9;
+  --lemon-cream: #EDE986;
 
-  --border-subtle: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-focus: #6366f1;
+  /* Surfaces & Layout */
+  --bg-app: #FAF8F7;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F5F2F7;
+  --border-color: #E9E3ED;
+  --border-focus: #F2619C;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --text-inverse: #ffffff;
-
-  /* Brand Accents */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-subtle: #e0e7ff;
-  --primary-text: #4338ca;
+  /* Typography */
+  --text-main: #292633;
+  --text-muted: #77717F;
+  --text-inverse: #FFFFFF;
 
   /* Status Colors */
-  --success: #10b981;
-  --success-subtle: #d1fae5;
-  --success-text: #065f46;
+  --status-success: #10B981;
+  --status-success-bg: #D1FAE5;
+  --status-warning: #F59E0B;
+  --status-warning-bg: #FEF3C7;
+  --status-error: #EF4444;
+  --status-error-bg: #FEE2E2;
 
-  --warning: #f59e0b;
-  --warning-subtle: #fef3c7;
-  --warning-text: #92400e;
+  /* Platform Tints */
+  --ig-tint: #E7BEF8;
+  --meta-tint: #93ABD9;
+  --tiktok-tint: #EDE986;
 
-  --danger: #ef4444;
-  --danger-subtle: #fee2e2;
-  --danger-text: #991b1b;
-
-  --info: #0284c7;
-  --info-subtle: #e0f2fe;
-  --info-text: #0369a1;
-
-  /* Platform Brand Colors */
-  --instagram-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  --meta-blue: #0064e0;
-  --meta-blue-subtle: #e7f3ff;
-
-  /* Evidence Badges */
-  --evidence-frames: #8b5cf6;
-  --evidence-frames-subtle: #ede9fe;
-  --evidence-thumbnail: #0ea5e9;
-  --evidence-thumbnail-subtle: #e0f2fe;
-  --evidence-caption: #f97316;
-  --evidence-caption-subtle: #ffedd5;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
+  /* Shadows & Radii */
+  --shadow-soft: 0 4px 20px rgba(147, 171, 217, 0.15);
+  --shadow-card: 0 2px 12px rgba(147, 171, 217, 0.10);
+  --shadow-hover: 0 8px 28px rgba(147, 171, 217, 0.22);
+  --radius-pill: 9999px;
+  --radius-card: 20px;
+  --radius-inner: 14px;
+  --radius-sm: 8px;
 
   /* Typography */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-
-[data-theme="dark"] {
-  --bg-app: #0b0f19;
-  --bg-card: #111827;
-  --bg-card-hover: #1f2937;
-  --bg-subtle: #1e293b;
-  --bg-input: #111827;
-  --bg-modal: #111827;
-  --bg-overlay: rgba(0, 0, 0, 0.8);
-
-  --border-subtle: #1f2937;
-  --border-strong: #374151;
-  --border-focus: #818cf8;
-
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
-  --text-inverse: #0f172a;
-
-  --primary: #6366f1;
-  --primary-hover: #818cf8;
-  --primary-subtle: #1e1b4b;
-  --primary-text: #c7d2fe;
-
-  --success: #10b981;
-  --success-subtle: #064e3b;
-  --success-text: #a7f3d0;
-
-  --warning: #f59e0b;
-  --warning-subtle: #78350f;
-  --warning-text: #fde68a;
-
-  --danger: #ef4444;
-  --danger-subtle: #7f1d1d;
-  --danger-text: #fecaca;
-
-  --info: #38bdf8;
-  --info-subtle: #0c4a6e;
-  --info-text: #bae6fd;
-
-  --meta-blue: #2d88ff;
-  --meta-blue-subtle: #002e6e;
-
-  --evidence-frames: #a78bfa;
-  --evidence-frames-subtle: #2e1065;
-  --evidence-thumbnail: #38bdf8;
-  --evidence-thumbnail-subtle: #082f49;
-  --evidence-caption: #fb923c;
-  --evidence-caption-subtle: #431407;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
-}
-
-/* ==========================================================================
-   Base Global CSS
-   ========================================================================== */
 
 * {
   box-sizing: border-box;
@@ -144,11 +57,10 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-app);
-  color: var(--text-primary);
+  color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Animations */
@@ -156,14 +68,14 @@ body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes pulseGlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.03); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .animate-spin {
@@ -171,25 +83,25 @@ body {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-app);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: var(--radius-full);
+  background: var(--border-color);
+  border-radius: var(--radius-pill);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--blueberry-milk);
 }

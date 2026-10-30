@@ -337,7 +337,8 @@ export class ScoringService {
       // RULE 1: If evidence is caption_only (no image reachable), cap final score at 40 and mark clearly
       if (evidence === 'caption_only') {
         finalScore = Math.min(40, finalScore);
-        explanation = `[caption_only] ${explanation} (No visual evidence reachable; score capped at 40).`;
+        const snippet = cand.caption ? `Caption text mentions: "${cand.caption.slice(0, 90).trim()}..."` : 'No caption text provided';
+        explanation = `[caption_only] ${snippet}. No video frames or thumbnail were reachable for visual verification; matching score capped at 40.`;
       }
 
       const belowThreshold = finalScore < this.minMatchThreshold || evidence === 'caption_only';
@@ -538,7 +539,8 @@ Output strictly raw valid JSON array, no markdown backticks.`,
       // Cap at 40 if caption_only
       if (evidence === 'caption_only') {
         finalScore = Math.min(40, finalScore);
-        explanation = `[caption-only: no visual media reachable] ${explanation}`;
+        const snippet = cand.caption ? `Caption text mentions: "${cand.caption.slice(0, 90).trim()}..."` : 'No caption text provided';
+        explanation = `[caption_only] ${snippet}. No video frames or thumbnail were reachable for visual verification; matching score capped at 40.`;
       }
 
       const belowThreshold = finalScore < this.minMatchThreshold || evidence === 'caption_only';

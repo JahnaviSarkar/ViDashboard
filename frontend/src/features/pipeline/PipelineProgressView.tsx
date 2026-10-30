@@ -56,8 +56,8 @@ export const PipelineProgressView: React.FC<PipelineProgressViewProps> = ({
                   : error
                   ? 'danger'
                   : connectionStatus === 'connected'
-                  ? 'info'
-                  : 'default'
+                  ? 'blueberry'
+                  : 'neutral'
               }
             >
               {isComplete
@@ -86,7 +86,7 @@ export const PipelineProgressView: React.FC<PipelineProgressViewProps> = ({
             </Button>
           )}
           {isComplete && (
-            <Button size="md" variant="primary" onClick={onCompleted} rightIcon={<ArrowRight size={16} />}>
+            <Button size="md" variant="raspberry" onClick={onCompleted} rightIcon={<ArrowRight size={16} />}>
               View Results
             </Button>
           )}
@@ -225,12 +225,12 @@ export const PipelineProgressView: React.FC<PipelineProgressViewProps> = ({
 
                 {/* Specific Stage Payload Stats */}
                 {item.stage === 'fetching_instagram' && stageState.payload?.usable !== undefined && (
-                  <Badge size="sm" variant="instagram">
+                  <Badge size="sm" variant="lilac">
                     {stageState.payload.usable} Reels
                   </Badge>
                 )}
                 {item.stage === 'fetching_meta' && stageState.payload?.usable !== undefined && (
-                  <Badge size="sm" variant="meta">
+                  <Badge size="sm" variant="blueberry">
                     {stageState.payload.usable} Ads
                   </Badge>
                 )}

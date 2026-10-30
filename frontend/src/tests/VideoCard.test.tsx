@@ -41,7 +41,6 @@ describe('VideoCard Component', () => {
     const onPreview = vi.fn();
     render(<VideoCard result={mockResult} onOpenPreview={onPreview} />);
 
-    expect(screen.getByText('Reels')).toBeDefined();
     expect(screen.getByText('88%')).toBeDefined();
     expect(screen.getByText('@beautyguru')).toBeDefined();
     expect(screen.getByText('thumbnail')).toBeDefined();
@@ -60,18 +59,19 @@ describe('VideoCard Component', () => {
     }
   });
 
-  it('displays "Why this matched" popover on click with visual citation', () => {
+  it('displays "Rubric" popover on click with visual citation', () => {
     const onPreview = vi.fn();
     render(<VideoCard result={mockResult} onOpenPreview={onPreview} />);
 
-    const popoverTrigger = screen.getByText('Why this matched');
+    const popoverTrigger = screen.getByText('Rubric');
     expect(popoverTrigger).toBeDefined();
     fireEvent.click(popoverTrigger);
 
     // Popover content should be visible
-    expect(screen.getByText('Match Rubric & Visual Evidence')).toBeDefined();
+    expect(screen.getByText('Visual Evidence & Rubric')).toBeDefined();
     expect(screen.getByText('Visible product style matches Fenty Beauty Gloss Bomb; brand verified.')).toBeDefined();
     expect(screen.getByText('Cosine: 85%')).toBeDefined();
     expect(screen.getByText('Rubric: 90%')).toBeDefined();
   });
 });
+

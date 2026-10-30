@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSSE, PIPELINE_STAGES } from '../hooks/useSSE';
 
@@ -88,3 +88,4 @@ describe('useSSE Hook', () => {
     expect(result.current.connectionStatus).toBe('completed');
   });
 });
+

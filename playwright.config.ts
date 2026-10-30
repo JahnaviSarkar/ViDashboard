@@ -17,9 +17,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview --workspace=frontend -- --port 5173 --host 127.0.0.1',
+    command: 'npx vite preview frontend --port 5173 --host 127.0.0.1',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: false,
     timeout: 30000,
   },
 });
+

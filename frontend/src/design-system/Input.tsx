@@ -28,9 +28,10 @@ export const Input: React.FC<InputProps> = ({
         <label
           htmlFor={inputId}
           style={{
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: 'var(--text-primary)',
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            color: '#292633',
+            letterSpacing: '-0.01em',
           }}
         >
           {label}
@@ -41,16 +42,16 @@ export const Input: React.FC<InputProps> = ({
         style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'var(--bg-input)',
-          border: `1px solid ${errorMessage ? 'var(--danger)' : 'var(--border-strong)'}`,
-          borderRadius: 'var(--radius-md)',
-          padding: '0 12px',
-          transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-          boxShadow: 'var(--shadow-sm)',
+          backgroundColor: '#FFFFFF',
+          border: `1.5px solid ${errorMessage ? '#EF4444' : '#E9E3ED'}`,
+          borderRadius: 'var(--radius-pill)',
+          padding: '0 16px',
+          boxShadow: '0 2px 8px rgba(147, 171, 217, 0.08)',
+          transition: 'all 0.15s ease',
         }}
       >
         {leftIcon && (
-          <span style={{ color: 'var(--text-muted)', display: 'flex', marginRight: '8px' }}>
+          <span style={{ color: '#77717F', display: 'flex', marginRight: '10px' }}>
             {leftIcon}
           </span>
         )}
@@ -62,9 +63,9 @@ export const Input: React.FC<InputProps> = ({
             border: 'none',
             outline: 'none',
             background: 'transparent',
-            padding: '10px 0',
+            padding: '11px 0',
             fontSize: '0.9375rem',
-            color: 'var(--text-primary)',
+            color: '#292633',
             fontFamily: 'var(--font-sans)',
             ...style,
           }}
@@ -72,18 +73,18 @@ export const Input: React.FC<InputProps> = ({
           {...props}
         />
         {rightIcon && (
-          <span style={{ color: 'var(--text-muted)', display: 'flex', marginLeft: '8px' }}>
+          <span style={{ color: '#77717F', display: 'flex', marginLeft: '10px' }}>
             {rightIcon}
           </span>
         )}
       </div>
 
       {errorMessage ? (
-        <span style={{ fontSize: '0.8125rem', color: 'var(--danger)', fontWeight: 500 }}>
+        <span style={{ fontSize: '0.8125rem', color: '#EF4444', fontWeight: 600 }}>
           {errorMessage}
         </span>
       ) : helperText ? (
-        <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: '0.75rem', color: '#77717F' }}>
           {helperText}
         </span>
       ) : null}

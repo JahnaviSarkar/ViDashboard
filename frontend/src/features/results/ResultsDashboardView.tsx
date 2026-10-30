@@ -1,69 +1,99 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Search as SearchIcon,
   RotateCcw,
-  Sparkles,
-  Instagram,
-  Flame,
+  AlertTriangle,
   FileSpreadsheet,
   FileCode,
-  Tag,
-  Palette,
-  AlertTriangle,
+  Search as SearchIcon,
 } from 'lucide-react';
-import { Card, Button, Badge, Input, Slider, Tabs } from '../../design-system';
+import { Card, Button, Input, Slider } from '../../design-system';
 import { SearchDetails, CandidateResult } from '../../types';
 import { VideoCard } from './VideoCard';
 import { VideoPreviewModal } from './VideoPreviewModal';
+import { ProductAnalysisPanel } from './ProductAnalysisPanel';
+import { PlatformPillsBar } from './PlatformPillsBar';
+import { UniquenessBar } from './UniquenessBar';
+import { ShortfallBanner } from './ShortfallBanner';
+import { MockDataBanner } from './MockDataBanner';
 
 export interface ResultsDashboardViewProps {
   searchDetails: SearchDetails;
   onNewSearch: () => void;
+  shortlist: CandidateResult[];
+  onToggleShortlist: (result: CandidateResult) => void;
+  onRetryShortfall?: () => void;
 }
 
 export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
   searchDetails,
   onNewSearch,
+  shortlist,
+  onToggleShortlist,
+  onRetryShortfall,
 }) => {
   const { product, analysis, sourceRuns, results, search } = searchDetails;
 
-  // Filter & Search states
-  const [selectedSource, setSelectedSource] = useState<'all' | 'instagram' | 'meta'>('all');
+  // Platform & Filter state
+  const [selectedPlatform, setSelectedPlatform] = useState<'all' | 'instagram' | 'meta' | 'tiktok'>('all');
+  const [tiktokEnabled, setTiktokEnabled] = useState(false);
   const [minScore, setMinScore] = useState<number>(search.minMatchThreshold || 60);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'score' | 'date'>('score');
+  const [showPreviouslySeen, setShowPreviouslySeen] = useState(false);
 
-  // Preview modal state
+  // Preview modal
   const [previewResult, setPreviewResult] = useState<CandidateResult | null>(null);
 
-  // Filtered and sorted results
+  // Source counts
+  const igRun = sourceRuns.find((r) => r.source === 'instagram');
+  const metaRun = sourceRuns.find((r) => r.source === 'meta');
+  const igCount = igRun?.usable ?? results.filter((r) => r.video.platform === 'instagram').length;
+  const igShortfall = igRun?.shortfall ?? 0;
+  const metaCount = metaRun?.usable ?? results.filter((r) => r.video.platform === 'meta').length;
+  const metaShortfall = metaRun?.shortfall ?? 0;
+
+  // Uniqueness stats calculation
+  const totalCollected = (igRun?.collected ?? 0) + (metaRun?.collected ?? 0) || results.length;
+  const duplicatesRemoved = search.stats?.duplicatesRemoved ?? Math.max(0, totalCollected - results.length);
+  const previouslySeenFiltered = search.stats?.previouslySeenFiltered ?? results.filter((r) => r.previouslySeen).length;
+  const uniqueRemaining = results.filter((r) => !r.previouslySeen).length;
+
+  const isMockData = search.mode === 'mock' || results.some((r) => r.video.isMock);
+
+  // Filter & Sort
   const filteredResults = useMemo(() => {
-    return results.filter((item) => {
-      // Source filter
-      if (selectedSource !== 'all' && item.video.platform !== selectedSource) {
-        return false;
-      }
-      // Min score filter
-      if (item.matchScore < minScore) {
-        return false;
-      }
-      // Search text query
-      if (searchQuery.trim()) {
-        const text = `${item.video.caption || ''} ${item.video.author || ''} ${item.video.platformVideoId}`.toLowerCase();
-        if (!text.includes(searchQuery.toLowerCase())) {
+    return results
+      .filter((item) => {
+        // Previously seen filter toggle
+        if (!showPreviouslySeen && item.previouslySeen) {
           return false;
         }
-      }
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'score') {
-        return b.matchScore - a.matchScore;
-      }
-      const dateA = a.video.postedAt ? new Date(a.video.postedAt).getTime() : 0;
-      const dateB = b.video.postedAt ? new Date(b.video.postedAt).getTime() : 0;
-      return dateB - dateA;
-    });
-  }, [results, selectedSource, minScore, searchQuery, sortBy]);
+        // Platform filter
+        if (selectedPlatform !== 'all' && item.video.platform !== selectedPlatform) {
+          return false;
+        }
+        // Min score slider filter
+        if (item.matchScore < minScore) {
+          return false;
+        }
+        // Keyword text filter
+        if (searchQuery.trim()) {
+          const text = `${item.video.caption || ''} ${item.video.author || ''} ${item.video.platformVideoId}`.toLowerCase();
+          if (!text.includes(searchQuery.toLowerCase())) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'score') {
+          return b.matchScore - a.matchScore;
+        }
+        const dateA = a.video.postedAt ? new Date(a.video.postedAt).getTime() : 0;
+        const dateB = b.video.postedAt ? new Date(b.video.postedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+  }, [results, selectedPlatform, minScore, searchQuery, sortBy, showPreviouslySeen]);
 
   // Export handlers
   const handleExportJSON = () => {
@@ -80,7 +110,7 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
       r.video.platform,
       r.video.platformVideoId,
       r.matchScore,
-      r.scoreBreakdown.evidence || '',
+      r.scoreBreakdown?.evidence || '',
       `"${(r.video.author || '').replace(/"/g, '""')}"`,
       r.video.postedAt || '',
       r.video.canonicalUrl,
@@ -95,24 +125,25 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
     a.click();
   };
 
-  // Source stats
-  const igRun = sourceRuns.find((r) => r.source === 'instagram');
-  const metaRun = sourceRuns.find((r) => r.source === 'meta');
+  const isShortlisted = (videoId: string) => shortlist.some((item) => item.videoId === videoId || item.id === videoId);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      {/* Top Action Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ maxWidth: '1180px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* MOCK DATA BANNER if isMock */}
+      <MockDataBanner isMock={isMockData} />
+
+      {/* Honest Shortfall Banner if shortfall > 0 */}
+      <ShortfallBanner sourceRuns={sourceRuns} onRetry={onRetryShortfall} />
+
+      {/* Top Header / Action Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <Badge variant="success">Discovery Completed</Badge>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              ID: {search.id.slice(0, 8)}
-            </span>
-          </div>
-          <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Video Match Intelligence Dashboard
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#292633', letterSpacing: '-0.02em' }}>
+            Video Match Intelligence
           </h1>
+          <span style={{ fontSize: '0.8125rem', color: '#77717F' }}>
+            Showing {filteredResults.length} scored candidates above {minScore}% match
+          </span>
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -122,214 +153,75 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
           <Button size="sm" variant="secondary" onClick={handleExportJSON} leftIcon={<FileCode size={14} />}>
             Export JSON
           </Button>
-          <Button size="sm" variant="primary" onClick={onNewSearch} leftIcon={<RotateCcw size={14} />}>
+          <Button size="sm" variant="raspberry" onClick={onNewSearch} leftIcon={<RotateCcw size={14} />}>
             New Search
           </Button>
         </div>
       </div>
 
-      {/* Target Product Summary Card */}
-      {product && (
-        <Card padding="md" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            {product.imageUrl && (
-              <img
-                src={product.imageUrl}
-                alt={product.title}
-                style={{
-                  width: '96px',
-                  height: '96px',
-                  borderRadius: 'var(--radius-md)',
-                  objectFit: 'contain',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              />
-            )}
+      {/* Product Analysis Panel */}
+      <ProductAnalysisPanel product={product} analysis={analysis} />
 
-            <div style={{ flex: 1, minWidth: '240px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                {product.brand && (
-                  <Badge variant="info">
-                    {product.brand}
-                  </Badge>
-                )}
-                {product.category && (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {product.category}
-                  </span>
-                )}
-              </div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                {product.title}
-              </h2>
-              {product.price && (
-                <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--success)' }}>
-                  {product.currency || ''} {product.price}
-                </div>
-              )}
-            </div>
+      {/* Platform Pills Bar (live count n / 20 with shortfall indicator) */}
+      <PlatformPillsBar
+        selectedPlatform={selectedPlatform}
+        onSelectPlatform={setSelectedPlatform}
+        igCount={igCount}
+        igShortfall={igShortfall}
+        metaCount={metaCount}
+        metaShortfall={metaShortfall}
+        tiktokEnabled={tiktokEnabled}
+        onToggleTiktok={() => setTiktokEnabled((prev) => !prev)}
+      />
 
-            {/* Analysis Attributes Swatches */}
-            {analysis?.attributes && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '380px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Extracted Image Attributes (Image Brain)
-                </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {analysis.attributes.productType && (
-                    <Badge size="sm" variant="default" icon={<Tag size={12} />}>
-                      {analysis.attributes.productType}
-                    </Badge>
-                  )}
-                  {analysis.attributes.dominantColour && (
-                    <Badge size="sm" variant="default" icon={<Palette size={12} />}>
-                      {analysis.attributes.dominantColour}
-                    </Badge>
-                  )}
-                  {analysis.attributes.material && (
-                    <Badge size="sm" variant="default">
-                      {analysis.attributes.material}
-                    </Badge>
-                  )}
-                  {analysis.attributes.shape && (
-                    <Badge size="sm" variant="default">
-                      {analysis.attributes.shape}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
+      {/* Uniqueness Bar with Show Previously Seen Toggle */}
+      <UniquenessBar
+        totalCollected={totalCollected}
+        duplicatesRemoved={duplicatesRemoved}
+        previouslySeenFiltered={previouslySeenFiltered}
+        uniqueRemaining={uniqueRemaining}
+        showPreviouslySeen={showPreviouslySeen}
+        onToggleShowPreviouslySeen={() => setShowPreviouslySeen((prev) => !prev)}
+      />
 
-      {/* Source Runs Breakdown Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-        {/* Instagram Run */}
-        <Card padding="sm" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--instagram-gradient)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-            }}
-          >
-            <Instagram size={20} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Instagram Reels
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {igRun ? `${igRun.usable} usable / ${igRun.collected} collected` : 'No run recorded'}
-            </div>
-          </div>
-          {igRun?.shortfall !== undefined && igRun.shortfall > 0 ? (
-            <Badge size="sm" variant="warning">
-              -{igRun.shortfall} Shortfall
-            </Badge>
-          ) : (
-            <Badge size="sm" variant="success">
-              Goal Reached
-            </Badge>
-          )}
-        </Card>
-
-        {/* Meta Ads Run */}
-        <Card padding="sm" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--meta-blue)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-            }}
-          >
-            <Flame size={20} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Meta Ad Library
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {metaRun ? `${metaRun.usable} usable / ${metaRun.collected} collected` : 'No run recorded'}
-            </div>
-          </div>
-          {metaRun?.shortfall !== undefined && metaRun.shortfall > 0 ? (
-            <Badge size="sm" variant="warning">
-              -{metaRun.shortfall} Shortfall
-            </Badge>
-          ) : (
-            <Badge size="sm" variant="success">
-              Goal Reached
-            </Badge>
-          )}
-        </Card>
-
-        {/* Matches Above Threshold */}
-        <Card padding="sm" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--primary-subtle)',
-              color: 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Sparkles size={20} />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Above Threshold Matches
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {filteredResults.length} displaying / {results.length} total scored
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Control & Filter Toolbar */}
-      <Card padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          {/* Source Tabs */}
-          <Tabs
-            tabs={[
-              { id: 'all', label: 'All Sources', badge: results.length },
-              { id: 'instagram', label: 'Instagram Reels', badge: results.filter((r) => r.video.platform === 'instagram').length },
-              { id: 'meta', label: 'Meta Ads', badge: results.filter((r) => r.video.platform === 'meta').length },
-            ]}
-            activeTab={selectedSource}
-            onChange={(id) => setSelectedSource(id as any)}
+      {/* Filter and Sorting Toolbar */}
+      <Card padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr auto', gap: '16px', alignItems: 'center' }}>
+          {/* Keyword Search */}
+          <Input
+            placeholder="Search keywords, authors, or captions in results..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            leftIcon={<SearchIcon size={16} />}
           />
 
-          {/* Sort Selector */}
+          {/* Threshold Slider */}
+          <Slider
+            label="Match Score Threshold"
+            value={minScore}
+            min={40}
+            max={90}
+            step={5}
+            onChange={setMinScore}
+            helperText={`Showing candidates scoring >= ${minScore}%`}
+          />
+
+          {/* Sort Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>Sort By:</span>
+            <span style={{ fontSize: '0.8125rem', color: '#77717F', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Sort:
+            </span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               style={{
-                backgroundColor: 'var(--bg-card)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-strong)',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
+                backgroundColor: '#FFFFFF',
+                color: '#292633',
+                border: '1.5px solid #E9E3ED',
+                borderRadius: 'var(--radius-pill)',
+                padding: '8px 14px',
                 fontSize: '0.8125rem',
+                fontWeight: 600,
                 outline: 'none',
                 cursor: 'pointer',
               }}
@@ -339,42 +231,28 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
             </select>
           </div>
         </div>
-
-        {/* Search Query and Match Slider Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', alignItems: 'center' }}>
-          <Input
-            placeholder="Search keywords, authors, or captions in results..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            leftIcon={<SearchIcon size={16} />}
-          />
-
-          <Slider
-            label="Filter Match Threshold"
-            value={minScore}
-            min={40}
-            max={90}
-            step={5}
-            onChange={setMinScore}
-            helperText={`Showing candidates scoring >= ${minScore}%`}
-          />
-        </div>
       </Card>
 
       {/* Video Cards Grid */}
       {filteredResults.length === 0 ? (
-        <Card padding="lg" style={{ textAlign: 'center', padding: '48px 24px' }}>
-          <div style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
-            <AlertTriangle size={36} style={{ margin: '0 auto' }} />
-          </div>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-            No matching videos found
+        <Card padding="lg" style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <AlertTriangle size={36} color="#93ABD9" style={{ margin: '0 auto 12px' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#292633', marginBottom: '8px' }}>
+            No matching videos match the current filters
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '420px', margin: '0 auto 16px' }}>
-            Try lowering the minimum score threshold slider (e.g. to 50%) or clearing the keyword search filter.
+          <p style={{ color: '#77717F', fontSize: '0.875rem', maxWidth: '420px', margin: '0 auto 20px' }}>
+            Try lowering the score threshold slider or resetting keyword filters to view more candidates.
           </p>
-          <Button size="sm" variant="outline" onClick={() => { setMinScore(50); setSearchQuery(''); }}>
-            Reset Filters
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setMinScore(50);
+              setSearchQuery('');
+              setSelectedPlatform('all');
+            }}
+          >
+            Reset All Filters
           </Button>
         </Card>
       ) : (
@@ -389,6 +267,8 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
             <VideoCard
               key={result.id || result.videoId}
               result={result}
+              isShortlisted={isShortlisted(result.videoId || result.id)}
+              onToggleShortlist={onToggleShortlist}
               onOpenPreview={setPreviewResult}
             />
           ))}

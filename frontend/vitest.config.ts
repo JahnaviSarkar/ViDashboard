@@ -6,5 +6,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    include: ['src/tests/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['tests/**', 'node_modules/**', 'dist/**'],
   },
 });
+

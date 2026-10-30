@@ -124,7 +124,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
       {/* Header Banner */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Badge variant="info" icon={<Sparkles size={14} />}>
+          <Badge variant="blueberry" icon={<Sparkles size={14} />}>
             Multimodal AI Discovery Engine
           </Badge>
           <button
@@ -448,7 +448,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
           <Button
             type="submit"
             size="lg"
-            variant="primary"
+            variant="raspberry"
             isLoading={isLoading}
             rightIcon={<ArrowRight size={18} />}
             style={{ width: '100%', marginTop: '6px' }}

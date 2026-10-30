@@ -150,7 +150,9 @@ describe('Hybrid Scoring Engine (Phase 4)', () => {
     expect(result.scoreBreakdown.evidence).toBe('caption_only');
     expect(result.matchScore).toBeLessThanOrEqual(40);
     expect(result.belowThreshold).toBe(true);
-    expect(result.explanation).toContain('[caption-only: no visual media reachable]');
+    expect(result.explanation).toContain('[caption_only]');
+    expect(result.explanation.toLowerCase()).not.toContain('visible product style');
+    expect(result.explanation.toLowerCase()).not.toContain('visible silhouette');
   });
 });
 

@@ -113,6 +113,12 @@ export interface SearchDetails {
     mode: 'live' | 'mock';
     createdAt: string;
     completedAt?: string;
+    stats?: {
+      totalCollected?: number;
+      duplicatesRemoved?: number;
+      previouslySeenFiltered?: number;
+      uniqueRemaining?: number;
+    };
   };
   product?: ProductDetails | null;
   analysis?: {
@@ -135,4 +141,6 @@ export interface SearchItemSummary {
   createdAt: string;
   productTitle?: string;
   resultCount?: number;
+  uniqueCount?: number;
 }
+
