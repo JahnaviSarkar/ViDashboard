@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import './design-system/tokens.css';
 import { LeftRail } from './components/LeftRail';
+import { InteractiveOutlinedLogo } from './components/InteractiveOutlinedLogo';
 import { SearchHistoryPanel } from './features/history/SearchHistoryPanel';
 import { TopSearchBar } from './features/search/TopSearchBar';
 import { PipelineProgressView } from './features/pipeline/PipelineProgressView';
@@ -236,6 +237,9 @@ export default function App() {
           zIndex: 1,
         }}
       >
+        {/* Animated Interactive Outlined App Logo in the Background */}
+        <InteractiveOutlinedLogo />
+
         {/* Persistent, Collapsible Search History Panel */}
         <SearchHistoryPanel
           isOpen={isHistoryOpen}
@@ -246,7 +250,7 @@ export default function App() {
         />
 
         {/* 3. Main Content Area */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', position: 'relative', zIndex: 1 }}>
           {/* Top Header with App Brand and Search Input */}
           <header
             style={{
