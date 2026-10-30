@@ -39,6 +39,7 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
         query: 'Vintage Wooden Train Set',
         sources: ['instagram', 'meta'],
         minMatchThreshold: 65,
+        mode: 'mock',
       },
     });
 
@@ -81,11 +82,22 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
     expect(stages).toContain('analysing_image');
     expect(stages).toContain('generating_queries');
     expect(stages).toContain('fetching_instagram');
+    expect(stages).toContain('fetching_meta');
+    expect(stages).toContain('extracting_frames');
     expect(stages).toContain('finalizing_results');
 
-    // Future stages must be flagged as skipped
-    const instagramEvent = events.find((e) => e.stage === 'fetching_instagram');
-    expect(instagramEvent?.status).toBe('skipped');
+    // Phase 3 collectors run actively (in mock mode during tests, both succeed)
+    const igEvents = events.filter((e) => e.stage === 'fetching_instagram');
+    expect(igEvents.length).toBeGreaterThanOrEqual(2);
+    expect(igEvents[igEvents.length - 1].status).toBe('done');
+
+    const metaEvents = events.filter((e) => e.stage === 'fetching_meta');
+    expect(metaEvents.length).toBeGreaterThanOrEqual(2);
+    expect(metaEvents[metaEvents.length - 1].status).toBe('done');
+
+    // Phase 4 stages remain skipped
+    const framesEvent = events.find((e) => e.stage === 'extracting_frames');
+    expect(framesEvent?.status).toBe('skipped');
 
     const finalEvent = events.find((e) => e.stage === 'finalizing_results');
     expect(finalEvent?.status).toBe('done');

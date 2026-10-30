@@ -3,9 +3,12 @@ import crypto from 'crypto';
 import { SearchRepository } from '../db/repositories/search.repository';
 import { ProductRepository } from '../db/repositories/product.repository';
 import { ProductAnalysisRepository } from '../db/repositories/product-analysis.repository';
+import { VideoRepository } from '../db/repositories/video.repository';
+import { SourceRunRepository } from '../db/repositories/source-run.repository';
 import { ProductResolverService } from './product-resolver.service';
 import { QueryGeneratorService } from './query-generator.service';
 import { getVisionProvider } from '../providers/vision';
+import { InstagramCollector, MetaAdLibraryCollector } from '../collectors';
 import { pipelineEventBus } from '../sse/bus';
 import { logger } from '../utils/logger';
 
@@ -17,8 +20,21 @@ export class PipelineOrchestratorService {
   private searchRepo = new SearchRepository();
   private productRepo = new ProductRepository();
   private analysisRepo = new ProductAnalysisRepository();
+  private videoRepo = new VideoRepository();
+  private sourceRunRepo = new SourceRunRepository();
   private resolverService = new ProductResolverService();
   private queryGenerator = new QueryGeneratorService();
+  private customIgCollector?: InstagramCollector;
+  private customMetaCollector?: MetaAdLibraryCollector;
+
+  constructor(options?: {
+    instagramCollector?: InstagramCollector;
+    metaCollector?: MetaAdLibraryCollector;
+    mode?: 'live' | 'mock';
+  }) {
+    this.customIgCollector = options?.instagramCollector;
+    this.customMetaCollector = options?.metaCollector;
+  }
 
   async execute(searchId: string): Promise<void> {
     const startTime = Date.now();
@@ -214,11 +230,135 @@ export class PipelineOrchestratorService {
       });
 
       // ----------------------------------------------------------------------
-      // Stages 5 - 9: Skipped for Phase 2 (Implemented in Phase 3 & 4)
+      // Stages 5 & 6: Parallel Candidate Video Collection (Phase 3)
+      // ----------------------------------------------------------------------
+      const selectedSources = search.selectedSources || ['instagram', 'meta'];
+
+      const runCollector = async (
+        collector: { source: 'instagram' | 'meta'; collect: (q: any, opt: any) => Promise<any> },
+        stageName: 'fetching_instagram' | 'fetching_meta'
+      ) => {
+        if (!selectedSources.includes(collector.source)) {
+          await pipelineEventBus.emitAndPersist({
+            searchId,
+            stage: stageName,
+            status: 'skipped',
+            payload: { reason: `Source '${collector.source}' not selected for this search` },
+          });
+          return null;
+        }
+
+        const collectorStart = Date.now();
+        const runRecord = await this.sourceRunRepo.create({
+          searchId,
+          source: collector.source,
+          status: 'running',
+          requested: 20,
+          collected: 0,
+          usable: 0,
+          shortfall: 20,
+        });
+
+        await pipelineEventBus.emitAndPersist({
+          searchId,
+          stage: stageName,
+          status: 'running',
+          payload: {
+            message: `Collecting candidate videos from ${collector.source}...`,
+            requested: 20,
+          },
+        });
+
+        try {
+          const result = await collector.collect(generatedQueries, {
+            targetCount: 20,
+            searchId,
+          });
+
+          // Persist discovered candidate videos into database
+          for (const cand of result.candidates) {
+            await this.videoRepo.upsert({
+              platform: cand.platform,
+              platformVideoId: cand.platformVideoId,
+              canonicalUrl: cand.canonicalUrl,
+              thumbnailUrl: cand.thumbnailUrl,
+              mediaUrl: cand.mediaUrl,
+              caption: cand.caption,
+              author: cand.author,
+              postedAt: cand.postedAt,
+              raw: cand.raw,
+              isMock: cand.isMock,
+            });
+          }
+
+          // Update source_runs record with accurate shortfall accounting
+          await this.sourceRunRepo.update(runRecord.id, {
+            status: result.error && result.usable === 0 ? 'failed' : 'completed',
+            collected: result.collected,
+            usable: result.usable,
+            shortfall: result.shortfall,
+            error: result.error,
+            finishedAt: new Date(),
+          });
+
+          await pipelineEventBus.emitAndPersist({
+            searchId,
+            stage: stageName,
+            status: result.error && result.usable === 0 ? 'failed' : 'done',
+            payload: {
+              source: collector.source,
+              requested: result.requested,
+              collected: result.collected,
+              usable: result.usable,
+              shortfall: result.shortfall,
+              error: result.error,
+              durationMs: Date.now() - collectorStart,
+            },
+          });
+
+          return result;
+        } catch (err: any) {
+          logger.error({ err, source: collector.source }, 'Collector failed with unhandled exception');
+          await this.sourceRunRepo.update(runRecord.id, {
+            status: 'failed',
+            collected: 0,
+            usable: 0,
+            shortfall: 20,
+            error: err.message,
+            finishedAt: new Date(),
+          });
+
+          await pipelineEventBus.emitAndPersist({
+            searchId,
+            stage: stageName,
+            status: 'failed',
+            payload: {
+              source: collector.source,
+              error: err.message,
+              durationMs: Date.now() - collectorStart,
+            },
+          });
+
+          return null;
+        }
+      };
+
+      const searchMode: 'live' | 'mock' =
+        search.mode === 'mock' || process.env.MODE === 'mock' ? 'mock' : 'live';
+
+      const igCollector = this.customIgCollector || new InstagramCollector({ mode: searchMode });
+      const metaCollector = this.customMetaCollector || new MetaAdLibraryCollector({ mode: searchMode });
+
+      // Execute Instagram and Meta collectors concurrently in parallel
+      await Promise.allSettled([
+        runCollector(igCollector, 'fetching_instagram'),
+        runCollector(metaCollector, 'fetching_meta'),
+      ]);
+
+      // ----------------------------------------------------------------------
+      // Stages 7 - 9: Skipped for Phase 3 (Implemented in Phase 4)
       // ----------------------------------------------------------------------
       const futureStages = [
-        { stage: 'fetching_instagram', note: 'Instagram Reels collection implemented in Phase 3' },
-        { stage: 'fetching_meta', note: 'Meta Ad Library collection implemented in Phase 3' },
         { stage: 'extracting_frames', note: 'Frame extraction implemented in Phase 4' },
         { stage: 'calculating_similarity', note: 'Visual similarity scoring implemented in Phase 4' },
         { stage: 'removing_duplicates', note: 'Deduplication and clustering implemented in Phase 4' },

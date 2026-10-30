@@ -11,7 +11,12 @@ let dbInstance: NodePgDatabase<typeof schema> | null = null;
 
 export function getPool(connectionString?: string): pg.Pool {
   if (!pool) {
-    const connStr = connectionString || getConfig().DATABASE_URL;
+    let connStr = connectionString || getConfig().DATABASE_URL;
+    if (!connStr.includes('client_encoding')) {
+      const separator = connStr.includes('?') ? '&' : '?';
+      connStr = `${connStr}${separator}options=-c%20client_encoding%3DUTF8`;
+    }
+
     pool = new Pool({
       connectionString: connStr,
       max: 20,

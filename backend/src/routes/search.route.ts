@@ -20,6 +20,7 @@ const searchRequestSchema = z
     sources: z.array(z.enum(['instagram', 'meta', 'tiktok'])).default(['instagram', 'meta']),
     minMatchThreshold: z.coerce.number().min(0).max(100).default(60),
     showPreviouslySeen: z.coerce.boolean().default(false),
+    mode: z.enum(['live', 'mock']).optional(),
   })
   .refine(
     (data) => Boolean(data.query && data.query.trim()) || Boolean(data.productUrl && data.productUrl.trim()),
@@ -50,6 +51,7 @@ export async function searchRoutes(app: FastifyInstance) {
     let sources: Array<'instagram' | 'meta' | 'tiktok'> = ['instagram', 'meta'];
     let minMatchThreshold = 60;
     let uploadedImagePath: string | undefined;
+    let requestedMode: 'live' | 'mock' | undefined;
 
     const isMultipart = request.isMultipart();
 
@@ -82,6 +84,7 @@ export async function searchRoutes(app: FastifyInstance) {
           if (fieldName === 'query') queryText = fieldValue;
           else if (fieldName === 'productUrl') productUrl = fieldValue;
           else if (fieldName === 'minMatchThreshold') minMatchThreshold = parseInt(fieldValue, 10);
+          else if (fieldName === 'mode') requestedMode = fieldValue === 'mock' ? 'mock' : 'live';
           else if (fieldName === 'sources') {
             try {
               sources = JSON.parse(fieldValue);
@@ -98,6 +101,7 @@ export async function searchRoutes(app: FastifyInstance) {
       productUrl = parsed.productUrl || undefined;
       sources = parsed.sources as any;
       minMatchThreshold = parsed.minMatchThreshold;
+      requestedMode = parsed.mode;
     }
 
     if (!queryText && !productUrl && !uploadedImagePath) {
@@ -120,7 +124,7 @@ export async function searchRoutes(app: FastifyInstance) {
       uploadedImagePath: uploadedImagePath || null,
       selectedSources: sources,
       minMatchThreshold,
-      mode: config.MODE === 'mock' ? 'mock' : 'live',
+      mode: requestedMode || (config.MODE === 'mock' ? 'mock' : 'live'),
       status: 'pending',
     });
 
