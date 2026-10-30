@@ -17,13 +17,14 @@ const searchRequestSchema = z
   .object({
     query: z.string().optional(),
     productUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+    url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
     sources: z.array(z.enum(['instagram', 'meta', 'tiktok'])).default(['instagram', 'meta']),
     minMatchThreshold: z.coerce.number().min(0).max(100).default(60),
     showPreviouslySeen: z.coerce.boolean().default(false),
     mode: z.enum(['live', 'mock']).optional(),
   })
   .refine(
-    (data) => Boolean(data.query && data.query.trim()) || Boolean(data.productUrl && data.productUrl.trim()),
+    (data) => Boolean(data.query && data.query.trim()) || Boolean(data.productUrl && data.productUrl.trim()) || Boolean(data.url && data.url.trim()),
     {
       message: 'Either query text or productUrl must be provided',
       path: ['query'],
@@ -98,7 +99,7 @@ export async function searchRoutes(app: FastifyInstance) {
       // JSON body
       const parsed = searchRequestSchema.parse(request.body);
       queryText = parsed.query;
-      productUrl = parsed.productUrl || undefined;
+      productUrl = parsed.productUrl || parsed.url || undefined;
       sources = parsed.sources as any;
       minMatchThreshold = parsed.minMatchThreshold;
       requestedMode = parsed.mode;

@@ -42,17 +42,53 @@ export default function App() {
   // Preview modal for shortlist view
   const [previewResult, setPreviewResult] = useState<CandidateResult | null>(null);
 
-  const loadHistory = useCallback(async () => {
+  const handleSelectHistoricalSearch = useCallback(async (searchId: string) => {
+    setActiveSearchId(searchId);
+    setIsLoadingDetails(true);
+    setErrorState(null);
+    setCurrentTab('home');
     try {
-      const list = await getRecentSearches(25);
-      setHistory(list);
-    } catch {
-      // ignore history load error
+      const details = await getSearchDetails(searchId);
+      setSearchDetails(details);
+      if (details.search.status === 'completed') {
+        setCurrentView('results');
+      } else if (details.search.status === 'failed') {
+        setErrorState({
+          errorType: 'COLLECTION_FAILED',
+          message: 'This historical search encountered an execution failure.',
+        });
+        setCurrentView('error');
+      } else {
+        setCurrentView('progress');
+      }
+    } catch (err: any) {
+      setErrorState({
+        errorType: 'GENERIC_ERROR',
+        message: err.message || 'Could not load historical search details.',
+      });
+      setCurrentView('error');
+    } finally {
+      setIsLoadingDetails(false);
     }
   }, []);
 
+  const loadHistory = useCallback(async (autoSelectRecent = false) => {
+    try {
+      const list = await getRecentSearches(25);
+      setHistory(list);
+      if (autoSelectRecent && list.length > 0) {
+        const completed = list.find((s) => s.status === 'completed');
+        if (completed) {
+          handleSelectHistoricalSearch(completed.id);
+        }
+      }
+    } catch {
+      // ignore history load error
+    }
+  }, [handleSelectHistoricalSearch]);
+
   useEffect(() => {
-    loadHistory();
+    loadHistory(true);
   }, [loadHistory]);
 
   const handleToggleShortlist = (result: CandidateResult) => {
@@ -138,36 +174,6 @@ export default function App() {
       setErrorState({
         errorType: 'GENERIC_ERROR',
         message: err.message || 'Failed to retrieve search results.',
-      });
-      setCurrentView('error');
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  };
-
-  const handleSelectHistoricalSearch = async (searchId: string) => {
-    setActiveSearchId(searchId);
-    setIsLoadingDetails(true);
-    setErrorState(null);
-    setCurrentTab('home');
-    try {
-      const details = await getSearchDetails(searchId);
-      setSearchDetails(details);
-      if (details.search.status === 'completed') {
-        setCurrentView('results');
-      } else if (details.search.status === 'failed') {
-        setErrorState({
-          errorType: 'COLLECTION_FAILED',
-          message: 'This historical search encountered an execution failure.',
-        });
-        setCurrentView('error');
-      } else {
-        setCurrentView('progress');
-      }
-    } catch (err: any) {
-      setErrorState({
-        errorType: 'GENERIC_ERROR',
-        message: err.message || 'Could not load historical search details.',
       });
       setCurrentView('error');
     } finally {

@@ -47,6 +47,7 @@ export async function createSearch(params: CreateSearchParams): Promise<CreateSe
 
   if (params.inputType === 'product_url') {
     payload.url = params.url;
+    payload.productUrl = params.url;
   } else if (params.inputType === 'keyword') {
     payload.query = params.query;
   }
