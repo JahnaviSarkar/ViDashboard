@@ -7,6 +7,7 @@ import { logger } from './utils/logger';
 import { handleFastifyError } from './utils/errors';
 import { healthRoutes } from './routes/health.route';
 import { sseRoutes } from './routes/sse.route';
+import { searchRoutes } from './routes/search.route';
 
 export function buildApp(opts: FastifyServerOptions = {}): FastifyInstance {
   const config = getConfig();
@@ -45,6 +46,7 @@ export function buildApp(opts: FastifyServerOptions = {}): FastifyInstance {
   // Register Core Routes
   app.register(healthRoutes);
   app.register(sseRoutes);
+  app.register(searchRoutes);
 
   return app;
 }

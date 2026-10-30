@@ -31,16 +31,35 @@ export async function initBoss(connectionString?: string): Promise<PgBoss> {
   // Register search-pipeline queue in pg-boss schema
   await bossInstance.createQueue(SEARCH_PIPELINE_QUEUE);
 
-  // Register empty search-pipeline worker handler for Phase 1
-  await bossInstance.work(SEARCH_PIPELINE_QUEUE, async (jobs) => {
+  // Register search-pipeline worker handler
+  await bossInstance.work<{ searchId: string }>(SEARCH_PIPELINE_QUEUE, async (jobs) => {
     logger.info({ count: jobs.length }, 'search-pipeline worker received jobs');
     for (const job of jobs) {
-      logger.info({ jobId: job.id, data: job.data }, 'Processing search-pipeline queue item (Phase 1 placeholder)');
+      const searchId = job.data?.searchId;
+      if (!searchId) {
+        logger.warn({ jobId: job.id }, 'Job missing searchId payload, skipping');
+        continue;
+      }
+      try {
+        const { PipelineOrchestratorService } = await import('../services/pipeline-orchestrator.service');
+        const orchestrator = new PipelineOrchestratorService();
+        await orchestrator.execute(searchId);
+      } catch (err) {
+        logger.error({ err, searchId, jobId: job.id }, 'Error executing pipeline job in worker');
+      }
     }
   });
 
-  logger.info({ queue: SEARCH_PIPELINE_QUEUE }, 'Registered empty search-pipeline queue worker');
+  logger.info({ queue: SEARCH_PIPELINE_QUEUE }, 'Registered search-pipeline queue worker');
   return bossInstance;
+}
+
+export async function enqueueSearchPipelineJob(data: { searchId: string }): Promise<string | null> {
+  const boss = getBoss();
+  const result = await boss.send(SEARCH_PIPELINE_QUEUE, data);
+  const jobId = typeof result === 'string' ? result : (result as any)?.id || (result ? String(result) : null);
+  logger.info({ searchId: data.searchId, jobId }, 'Enqueued search pipeline job');
+  return jobId;
 }
 
 export function getBoss(): PgBoss {

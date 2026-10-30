@@ -44,9 +44,9 @@ export const products = pgTable('products', {
 export const productAnalyses = pgTable('product_analyses', {
   id: varchar('id', { length: 36 }).primaryKey(),
   imageHash: text('image_hash').notNull().unique(),
-  attributes: jsonb('attributes').$type<Record<string, unknown>>().notNull(),
-  queries: jsonb('queries').$type<Record<string, unknown>>().notNull(),
-  hashtags: jsonb('hashtags').$type<Record<string, unknown>>().notNull(),
+  attributes: jsonb('attributes').$type<Record<string, any>>().notNull(),
+  queries: jsonb('queries').$type<Record<string, any>>().notNull(),
+  hashtags: jsonb('hashtags').$type<string[] | Record<string, any>>().notNull(),
   provider: varchar('provider', { length: 32 }).notNull(), // 'gemini' | 'mock'
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
