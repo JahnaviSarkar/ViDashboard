@@ -187,11 +187,14 @@ export default function App() {
         display: 'flex',
         minHeight: '100vh',
         width: '100%',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         padding: '32px 20px',
         boxSizing: 'border-box',
         position: 'relative',
+        gap: '20px',
+        maxWidth: '1540px',
+        margin: '0 auto',
         fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
@@ -200,12 +203,26 @@ export default function App() {
       <div className="ambient-glow ambient-glow-2" />
       <div className="ambient-glow ambient-glow-3" />
 
-      {/* Centered Floating Glass Shell Container */}
+      {/* 1. Slim Left Rail Dock - Floating OUTSIDE the bg layout sideways */}
+      <LeftRail
+        currentTab={currentTab}
+        onSelectTab={(tab) => {
+          setCurrentTab(tab);
+          if (tab === 'home' && currentView === 'error') {
+            setCurrentView('search');
+          }
+        }}
+        isHistoryOpen={isHistoryOpen}
+        onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
+        shortlistCount={shortlist.length}
+      />
+
+      {/* 2. Centered Floating Glass Shell Container ("bg layout") */}
       <div
         id="app-floating-viewport"
         style={{
-          width: '100%',
-          maxWidth: '1400px',
+          flex: 1,
+          maxWidth: '1380px',
           minHeight: 'calc(100vh - 64px)',
           borderRadius: '32px',
           border: '1px solid rgba(254, 243, 199, 0.20)',
@@ -219,21 +236,7 @@ export default function App() {
           zIndex: 1,
         }}
       >
-        {/* 1. Slim Left Rail */}
-        <LeftRail
-          currentTab={currentTab}
-          onSelectTab={(tab) => {
-            setCurrentTab(tab);
-            if (tab === 'home' && currentView === 'error') {
-              setCurrentView('search');
-            }
-          }}
-          isHistoryOpen={isHistoryOpen}
-          onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
-          shortlistCount={shortlist.length}
-        />
-
-        {/* 2. Persistent, Collapsible Search History Panel */}
+        {/* Persistent, Collapsible Search History Panel */}
         <SearchHistoryPanel
           isOpen={isHistoryOpen}
           onClose={() => setIsHistoryOpen(false)}

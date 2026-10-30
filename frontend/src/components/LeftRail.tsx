@@ -19,67 +19,71 @@ export const LeftRail: React.FC<LeftRailProps> = ({
   return (
     <aside
       style={{
-        width: '64px',
-        backgroundColor: 'rgba(255, 255, 255, 0.10)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
+        width: '68px',
+        backgroundColor: 'rgba(28, 16, 9, 0.82)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(254, 243, 199, 0.16)',
         borderRadius: 'var(--radius-pill, 9999px)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.65), 0 0 25px rgba(245, 158, 11, 0.12)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         padding: '16px 8px',
-        margin: '24px 0 24px 20px',
+        margin: 0,
         zIndex: 50,
         flexShrink: 0,
         height: 'fit-content',
         position: 'sticky',
-        top: '24px',
+        top: '32px',
+        gap: '12px',
+        transition: 'all 0.2s ease',
       }}
     >
-      {/* Brand Icon */}
-      <div
+      {/* Brand Icon (Sparkles with glowing ring) */}
+      <button
+        type="button"
         onClick={() => onSelectTab('home')}
         style={{
-          width: '42px',
-          height: '42px',
+          width: '46px',
+          height: '46px',
           borderRadius: '50%',
-          backgroundColor: 'rgba(242, 97, 156, 0.25)',
+          backgroundColor: 'rgba(242, 97, 156, 0.22)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#FFB3D1',
           cursor: 'pointer',
-          marginBottom: '20px',
-          border: '1px solid rgba(242, 97, 156, 0.50)',
-          boxShadow: '0 0 16px rgba(242, 97, 156, 0.35)',
+          border: '1.5px solid rgba(242, 97, 156, 0.65)',
+          boxShadow: '0 0 16px rgba(242, 97, 156, 0.45)',
           transition: 'all 0.2s ease',
+          outline: 'none',
         }}
-        title="ViDashboard"
+        title="ViDashboard Home"
       >
         <Sparkles size={20} />
-      </div>
+      </button>
 
       {/* Nav Icons */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', alignItems: 'center' }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', alignItems: 'center' }}>
         {/* Home / Discover */}
         <button
           type="button"
           onClick={() => onSelectTab('home')}
           style={{
-            width: '44px',
-            height: '44px',
+            width: '46px',
+            height: '46px',
             borderRadius: '50%',
-            border: 'none',
+            border: currentTab === 'home' && !isHistoryOpen ? '1px solid rgba(242, 97, 156, 0.45)' : '1px solid transparent',
             backgroundColor: currentTab === 'home' && !isHistoryOpen ? 'rgba(242, 97, 156, 0.28)' : 'transparent',
-            color: currentTab === 'home' && !isHistoryOpen ? '#FFB3D1' : 'rgba(254, 243, 199, 0.70)',
-            boxShadow: currentTab === 'home' && !isHistoryOpen ? '0 0 14px rgba(242, 97, 156, 0.3)' : 'none',
+            color: currentTab === 'home' && !isHistoryOpen ? '#FFB3D1' : 'rgba(254, 243, 199, 0.80)',
+            boxShadow: currentTab === 'home' && !isHistoryOpen ? '0 0 16px rgba(242, 97, 156, 0.40)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.15s ease',
+            outline: 'none',
           }}
           title="Discover / Home"
         >
@@ -91,19 +95,20 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           type="button"
           onClick={onToggleHistory}
           style={{
-            width: '44px',
-            height: '44px',
+            width: '46px',
+            height: '46px',
             borderRadius: '50%',
-            border: 'none',
-            backgroundColor: isHistoryOpen ? 'rgba(231, 190, 248, 0.28)' : 'transparent',
-            color: isHistoryOpen ? '#F3D5FC' : 'rgba(254, 243, 199, 0.70)',
-            boxShadow: isHistoryOpen ? '0 0 14px rgba(231, 190, 248, 0.3)' : 'none',
+            border: isHistoryOpen ? '1px solid rgba(231, 190, 248, 0.50)' : '1px solid transparent',
+            backgroundColor: isHistoryOpen ? 'rgba(231, 190, 248, 0.25)' : 'transparent',
+            color: isHistoryOpen ? '#F3D5FC' : 'rgba(254, 243, 199, 0.80)',
+            boxShadow: isHistoryOpen ? '0 0 16px rgba(231, 190, 248, 0.35)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.15s ease',
             position: 'relative',
+            outline: 'none',
           }}
           title="Search History"
         >
@@ -112,8 +117,8 @@ export const LeftRail: React.FC<LeftRailProps> = ({
             <div
               style={{
                 position: 'absolute',
-                top: '8px',
-                right: '8px',
+                top: '9px',
+                right: '9px',
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
@@ -129,19 +134,20 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           type="button"
           onClick={() => onSelectTab('shortlist')}
           style={{
-            width: '44px',
-            height: '44px',
+            width: '46px',
+            height: '46px',
             borderRadius: '50%',
-            border: 'none',
+            border: currentTab === 'shortlist' ? '1px solid rgba(242, 97, 156, 0.45)' : '1px solid transparent',
             backgroundColor: currentTab === 'shortlist' ? 'rgba(242, 97, 156, 0.28)' : 'transparent',
-            color: currentTab === 'shortlist' ? '#FFB3D1' : 'rgba(254, 243, 199, 0.70)',
-            boxShadow: currentTab === 'shortlist' ? '0 0 14px rgba(242, 97, 156, 0.3)' : 'none',
+            color: currentTab === 'shortlist' ? '#FFB3D1' : 'rgba(254, 243, 199, 0.80)',
+            boxShadow: currentTab === 'shortlist' ? '0 0 16px rgba(242, 97, 156, 0.40)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.15s ease',
             position: 'relative',
+            outline: 'none',
           }}
           title="Shortlist"
         >
