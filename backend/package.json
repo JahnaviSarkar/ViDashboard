@@ -10,7 +10,8 @@
     "test": "vitest run --fileParallelism=false",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:rollback": "tsx src/db/rollback.ts"
+    "db:rollback": "tsx src/db/rollback.ts",
+    "db:reset-seen": "tsx scripts/reset-seen.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
@@ -19,6 +20,7 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.4",
     "fastify": "^5.2.1",
+    "ffmpeg-static": "^5.3.0",
     "pg": "^8.13.1",
     "pg-boss": "^10.1.4",
     "pino": "^9.6.0",

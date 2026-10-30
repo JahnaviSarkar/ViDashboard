@@ -4,15 +4,15 @@ export type SearchStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export type PipelineStage =
   | 'resolving_product'
-  | 'extracting_image'
-  | 'analysing_image'
-  | 'generating_queries'
+  | 'extracting_product_image'
+  | 'analysing_product_image'
+  | 'generating_search_queries'
   | 'fetching_instagram'
   | 'fetching_meta'
-  | 'extracting_frames'
-  | 'calculating_similarity'
+  | 'extracting_video_frames'
+  | 'calculating_visual_similarity'
   | 'removing_duplicates'
-  | 'finalizing_results';
+  | 'preparing_final_results';
 
 export type StageStatus = 'pending' | 'running' | 'done' | 'failed' | 'skipped';
 
@@ -28,11 +28,15 @@ export interface CandidateVideo {
   postedAt?: Date;
   mediaPhash?: string;
   embedding?: number[];
+  evidence?: 'frames' | 'thumbnail' | 'caption_only';
+  framePaths?: string[];
+  frameBuffers?: Buffer[];
   isMock: boolean;
   raw?: Record<string, unknown>;
 }
 
 export interface ScoreBreakdown {
+  evidence: 'frames' | 'thumbnail' | 'caption_only';
   embeddingScore?: number;
   rubricScore?: number;
   finalScore: number;

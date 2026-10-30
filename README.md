@@ -48,7 +48,22 @@ npm install
 npm run db:migrate
 ```
 
-### 5. Start Development Servers
+### 5. Development Tools & Resetting Seen History
+For testing and development workflows, you can clear the cross-search deduplication history and search results:
+```bash
+# Truncates seen_videos and search_results tables (Development Only)
+npm run db:reset-seen
+```
+> **Dev-Only Warning:** `db:reset-seen` truncates all persisted search match results and cross-search deduplication fingerprints (`seen_videos`), allowing repeated searches to discover previously indexed videos afresh. Never run this command in production.
+
+You can also bypass previously-seen video suppression for individual test runs by setting:
+```bash
+IGNORE_SEEN_VIDEOS=true
+# or
+RESET_SEEN_ON_SEARCH=true
+```
+
+### 6. Start Development Servers
 ```bash
 npm run dev
 ```

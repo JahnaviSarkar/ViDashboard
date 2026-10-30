@@ -20,6 +20,8 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
   const orchestrator = new PipelineOrchestratorService();
 
   beforeAll(async () => {
+    await ensurePostgresRunning();
+    await runMigrations();
     await initBoss();
     app = buildApp();
     await app.ready();
@@ -77,13 +79,15 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
 
     const stages = events.map((e) => e.stage);
     expect(stages).toContain('resolving_product');
-    expect(stages).toContain('extracting_image');
-    expect(stages).toContain('analysing_image');
-    expect(stages).toContain('generating_queries');
+    expect(stages).toContain('extracting_product_image');
+    expect(stages).toContain('analysing_product_image');
+    expect(stages).toContain('generating_search_queries');
     expect(stages).toContain('fetching_instagram');
     expect(stages).toContain('fetching_meta');
-    expect(stages).toContain('extracting_frames');
-    expect(stages).toContain('finalizing_results');
+    expect(stages).toContain('extracting_video_frames');
+    expect(stages).toContain('calculating_visual_similarity');
+    expect(stages).toContain('removing_duplicates');
+    expect(stages).toContain('preparing_final_results');
 
     // Phase 3 collectors run actively (in mock mode during tests, both succeed)
     const igEvents = events.filter((e) => e.stage === 'fetching_instagram');
@@ -97,16 +101,16 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
     const searchResultRepo = new SearchResultRepository();
 
     // Phase 4 stages run actively and successfully
-    const framesEvent = events.filter((e) => e.stage === 'extracting_frames').pop();
+    const framesEvent = events.filter((e) => e.stage === 'extracting_video_frames').pop();
     expect(framesEvent?.status).toBe('done');
 
-    const similarityEvent = events.filter((e) => e.stage === 'calculating_similarity').pop();
+    const similarityEvent = events.filter((e) => e.stage === 'calculating_visual_similarity').pop();
     expect(similarityEvent?.status).toBe('done');
 
     const dedupEvent = events.filter((e) => e.stage === 'removing_duplicates').pop();
     expect(dedupEvent?.status).toBe('done');
 
-    const finalEvent = events.filter((e) => e.stage === 'finalizing_results').pop();
+    const finalEvent = events.filter((e) => e.stage === 'preparing_final_results').pop();
     expect(finalEvent?.status).toBe('done');
 
     // Verify search results were persisted in search_results table

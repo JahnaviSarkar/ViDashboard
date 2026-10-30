@@ -42,6 +42,8 @@ export const envSchema = z.object({
   EMBEDDING_WEIGHT: z.coerce.number().min(0).max(1).default(0.4),
   RUBRIC_WEIGHT: z.coerce.number().min(0).max(1).default(0.6),
   DHASH_THRESHOLD: z.coerce.number().int().min(0).default(10),
+  RESET_SEEN_ON_SEARCH: z.coerce.boolean().default(false),
+  IGNORE_SEEN_VIDEOS: z.coerce.boolean().default(false),
 }).superRefine((data, ctx) => {
   if (data.MODE === 'live' && data.VISION_PROVIDER === 'gemini') {
     if (!data.GEMINI_API_KEY || data.GEMINI_API_KEY.trim() === '') {

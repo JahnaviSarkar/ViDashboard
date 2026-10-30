@@ -47,4 +47,8 @@ export class SeenVideoRepository {
     }
     return map;
   }
+
+  async truncate(): Promise<void> {
+    await this.db.delete(seenVideos);
+  }
 }

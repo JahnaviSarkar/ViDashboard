@@ -61,6 +61,7 @@ describe('Hybrid Scoring Engine (Phase 4)', () => {
         platform: 'instagram',
         platformVideoId: '101',
         canonicalUrl: 'https://instagram.com/reel/101',
+        thumbnailUrl: 'https://example.com/thumb1.jpg',
         caption: 'Reviewing the gorgeous Fenty Beauty Gloss Bomb in Rose Shimmer! Best lip gloss formula.',
         author: '@fentyfan',
         isMock: true,
@@ -70,6 +71,7 @@ describe('Hybrid Scoring Engine (Phase 4)', () => {
         platform: 'meta',
         platformVideoId: '202',
         canonicalUrl: 'https://facebook.com/ad/202',
+        thumbnailUrl: 'https://example.com/thumb2.jpg',
         caption: 'Huge clearance sale on automotive brake pads and tires! Order today.',
         author: 'AutoParts Store',
         isMock: true,
@@ -121,5 +123,34 @@ describe('Hybrid Scoring Engine (Phase 4)', () => {
     expect(result.matchScore).toBeLessThanOrEqual(100);
     expect(result.matchScore).toBeGreaterThanOrEqual(0);
     expect(result.scoreBreakdown.finalScore).toBe(result.matchScore);
+    expect(result.scoreBreakdown.evidence).toBeDefined();
+  });
+
+  it('caps score at 40 and marks belowThreshold when evidence is caption_only', async () => {
+    const scorer = new ScoringService({
+      mode: 'mock',
+      embeddingWeight: 0.4,
+      rubricWeight: 0.6,
+      minMatchThreshold: 60,
+    });
+
+    const candidates: CandidateVideo[] = [
+      {
+        id: 'cand-caption-only',
+        platform: 'instagram',
+        platformVideoId: 'caption-only-1',
+        canonicalUrl: 'https://instagram.com/reel/caption1',
+        caption: 'Fenty Beauty Gloss Bomb Rose Shimmer swatches and review',
+        thumbnailUrl: undefined, // No thumbnail reachable
+        isMock: true,
+      },
+    ];
+
+    const [result] = await scorer.scoreCandidates(productInfo, candidates);
+    expect(result.scoreBreakdown.evidence).toBe('caption_only');
+    expect(result.matchScore).toBeLessThanOrEqual(40);
+    expect(result.belowThreshold).toBe(true);
+    expect(result.explanation).toContain('[caption-only: no visual media reachable]');
   });
 });
+

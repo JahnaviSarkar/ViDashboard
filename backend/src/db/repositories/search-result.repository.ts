@@ -49,4 +49,8 @@ export class SearchResultRepository {
       .where(eq(searchResults.searchId, searchId))
       .orderBy(desc(searchResults.matchScore));
   }
+
+  async truncate(): Promise<void> {
+    await this.db.delete(searchResults);
+  }
 }

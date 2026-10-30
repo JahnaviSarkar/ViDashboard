@@ -19,6 +19,7 @@
     "test:all": "npm run test --workspaces",
     "db:migrate": "npm run db:migrate --workspace=backend",
     "db:rollback": "npm run db:rollback --workspace=backend",
+    "db:reset-seen": "npm run db:reset-seen --workspace=backend",
     "db:generate": "npm run db:generate --workspace=backend"
   },
   "devDependencies": {

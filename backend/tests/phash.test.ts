@@ -72,3 +72,4 @@ describe('Perceptual Difference Hash (dHash) & Hamming Distance', () => {
     expect(areDHashNearDuplicates(null, '0000000000000000')).toBe(false);
   });
 });
+

@@ -97,7 +97,7 @@ describe('Server-Sent Events (SSE) Streaming and Last-Event-ID Replay', () => {
 
     const ev2 = await pipelineEventBus.emitAndPersist({
       searchId: search.id,
-      stage: 'analysing_image',
+      stage: 'analysing_product_image',
       status: 'running',
       payload: { step: 'detecting colours' },
     });
@@ -142,7 +142,7 @@ describe('Server-Sent Events (SSE) Streaming and Last-Event-ID Replay', () => {
 
     // ev2 and ev3 MUST be in the replayed output
     expect(accumulated).toContain(`id: ${ev2.id}\n`);
-    expect(accumulated).toContain('event: analysing_image');
+    expect(accumulated).toContain('event: analysing_product_image');
     expect(accumulated).toContain(`id: ${ev3.id}\n`);
     expect(accumulated).toContain('event: fetching_instagram');
   });

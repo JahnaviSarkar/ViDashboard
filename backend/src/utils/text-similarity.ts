@@ -46,3 +46,4 @@ export function isTextNearDuplicate(
 ): boolean {
   return jaccardSimilarity(textA, textB) >= threshold;
 }
+

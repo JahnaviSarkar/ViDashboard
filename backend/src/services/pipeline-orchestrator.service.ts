@@ -13,6 +13,7 @@ import { QueryGeneratorService } from './query-generator.service';
 import { ScoringService, ScoredCandidate } from './scoring.service';
 import { DedupService } from './dedup.service';
 import { computeDHash } from '../utils/phash';
+import { extractVideoFrames } from '../utils/frame-extractor';
 import { getThumbnailStorageDir } from '../utils/thumbnail-storage';
 import { safeFetch } from '../utils/ssrf';
 import { getVisionProvider } from '../providers/vision';
@@ -61,6 +62,12 @@ export class PipelineOrchestratorService {
     if (!search) {
       logger.error({ searchId }, 'Search record not found in database');
       return;
+    }
+
+    if (process.env.RESET_SEEN_ON_SEARCH === 'true') {
+      logger.info({ searchId }, 'RESET_SEEN_ON_SEARCH active: truncating seen_videos and search_results');
+      await this.searchResultRepo.truncate();
+      await this.seenVideoRepo.truncate();
     }
 
     await this.searchRepo.updateStatus(searchId, 'processing');
@@ -138,12 +145,12 @@ export class PipelineOrchestratorService {
       });
 
       // ----------------------------------------------------------------------
-      // Stage 2: Extracting image
+      // Stage 2: Extracting product image
       // ----------------------------------------------------------------------
       const stage2Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'extracting_image',
+        stage: 'extracting_product_image',
         status: 'running',
         payload: { message: 'Extracting product image and calculating visual hashes...' },
       });
@@ -166,7 +173,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'extracting_image',
+        stage: 'extracting_product_image',
         status: 'done',
         payload: {
           imageHash: productImageHash,
@@ -176,12 +183,12 @@ export class PipelineOrchestratorService {
       });
 
       // ----------------------------------------------------------------------
-      // Stage 3: Analysing image (Image Brain)
+      // Stage 3: Analysing product image (Image Brain)
       // ----------------------------------------------------------------------
       const stage3Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'analysing_image',
+        stage: 'analysing_product_image',
         status: 'running',
         payload: { message: 'Invoking Image Brain to extract structured visual attributes...' },
       });
@@ -225,7 +232,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'analysing_image',
+        stage: 'analysing_product_image',
         status: 'done',
         payload: {
           attributes: analysisResult.attributes,
@@ -235,12 +242,12 @@ export class PipelineOrchestratorService {
       });
 
       // ----------------------------------------------------------------------
-      // Stage 4: Generating queries
+      // Stage 4: Generating search queries
       // ----------------------------------------------------------------------
       const stage4Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'generating_queries',
+        stage: 'generating_search_queries',
         status: 'running',
         payload: { message: 'Generating platform queries, hashtags and expansion tiers...' },
       });
@@ -261,7 +268,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'generating_queries',
+        stage: 'generating_search_queries',
         status: 'done',
         payload: {
           queries: generatedQueries,
@@ -419,34 +426,43 @@ export class PipelineOrchestratorService {
       ]);
 
       // ----------------------------------------------------------------------
-      // Stage 7: Extracting frames & perceptual hashes (dHash)
+      // Stage 7: Extracting video frames
       // ----------------------------------------------------------------------
       const stage7Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'extracting_frames',
+        stage: 'extracting_video_frames',
         status: 'running',
         payload: {
-          message: 'Extracting representative frames and computing perceptual hashes (dHash)...',
+          message: 'Extracting representative video frames and computing perceptual hashes (dHash)...',
           candidateCount: allCollectedCandidates.length,
         },
       });
 
       let extractedHashCount = 0;
-      const thumbDir = getThumbnailStorageDir();
+      let frameExtractionCount = 0;
 
       for (const cand of allCollectedCandidates) {
-        if (!cand.mediaPhash && cand.thumbnailUrl) {
-          try {
+        try {
+          const frameRes = await extractVideoFrames(cand.id, cand.mediaUrl, cand.thumbnailUrl);
+          cand.evidence = frameRes.evidence;
+          cand.framePaths = frameRes.framePaths;
+          cand.frameBuffers = frameRes.frameBuffers;
+          if (cand.evidence === 'frames') {
+            frameExtractionCount++;
+          }
+
+          if (!cand.mediaPhash) {
             let phash: string | null = null;
-            // Check if stored locally in storage/thumbnails
-            if (cand.thumbnailUrl.startsWith('/storage/thumbnails/')) {
+            if (cand.frameBuffers && cand.frameBuffers.length > 0) {
+              phash = await computeDHash(cand.frameBuffers[0]);
+            } else if (cand.thumbnailUrl?.startsWith('/storage/thumbnails/')) {
               const filename = path.basename(cand.thumbnailUrl);
-              const localFilePath = path.join(thumbDir, filename);
+              const localFilePath = path.join(getThumbnailStorageDir(), filename);
               if (fs.existsSync(localFilePath)) {
                 phash = await computeDHash(localFilePath);
               }
-            } else if (cand.thumbnailUrl.startsWith('http')) {
+            } else if (cand.thumbnailUrl?.startsWith('http')) {
               const res = await safeFetch(cand.thumbnailUrl, { timeoutMs: 6000 });
               if (res.statusCode >= 200 && res.statusCode < 300 && res.buffer.length > 0) {
                 phash = await computeDHash(res.buffer);
@@ -471,30 +487,31 @@ export class PipelineOrchestratorService {
                 isMock: cand.isMock,
               });
             }
-          } catch (err: any) {
-            logger.debug({ err: err.message, id: cand.id }, 'Could not compute dHash for candidate');
           }
+        } catch (err: any) {
+          logger.debug({ err: err.message, id: cand.id }, 'Could not extract frames or compute dHash for candidate');
         }
       }
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'extracting_frames',
+        stage: 'extracting_video_frames',
         status: 'done',
         payload: {
           totalCandidates: allCollectedCandidates.length,
           extractedHashCount,
+          frameExtractionCount,
           durationMs: Date.now() - stage7Start,
         },
       });
 
       // ----------------------------------------------------------------------
-      // Stage 8: Calculating Similarity (Hybrid CLIP + VLM Scoring)
+      // Stage 8: Calculating visual similarity (Hybrid CLIP + VLM Scoring)
       // ----------------------------------------------------------------------
       const stage8Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'calculating_similarity',
+        stage: 'calculating_visual_similarity',
         status: 'running',
         payload: {
           message: 'Evaluating hybrid semantic embeddings and vision rubric...',
@@ -507,6 +524,8 @@ export class PipelineOrchestratorService {
         {
           title: productTitle,
           brand: brandName,
+          imageUrl: productImageUrl,
+          imageBuffer: productImageBuffer,
           analysis: analysisResult.attributes as any,
         },
         allCollectedCandidates
@@ -535,7 +554,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'calculating_similarity',
+        stage: 'calculating_visual_similarity',
         status: 'done',
         payload: {
           totalScored: scoredCandidates.length,
@@ -561,7 +580,7 @@ export class PipelineOrchestratorService {
         searchId,
         dHashThreshold: 10,
         textJaccardThreshold: 0.85,
-        excludePreviouslySeen: true,
+        excludePreviouslySeen: process.env.IGNORE_SEEN_VIDEOS !== 'true',
       });
 
       await pipelineEventBus.emitAndPersist({
@@ -654,16 +673,23 @@ export class PipelineOrchestratorService {
 
                 // Extract frames for new candidates
                 for (const cand of newCandidates) {
-                  if (!cand.mediaPhash && cand.thumbnailUrl) {
-                    try {
+                  try {
+                    const frameRes = await extractVideoFrames(cand.id, cand.mediaUrl, cand.thumbnailUrl);
+                    cand.evidence = frameRes.evidence;
+                    cand.framePaths = frameRes.framePaths;
+                    cand.frameBuffers = frameRes.frameBuffers;
+
+                    if (!cand.mediaPhash) {
                       let phash: string | null = null;
-                      if (cand.thumbnailUrl.startsWith('/storage/thumbnails/')) {
+                      if (cand.frameBuffers && cand.frameBuffers.length > 0) {
+                        phash = await computeDHash(cand.frameBuffers[0]);
+                      } else if (cand.thumbnailUrl?.startsWith('/storage/thumbnails/')) {
                         const filename = path.basename(cand.thumbnailUrl);
                         const localFilePath = path.join(thumbDir, filename);
                         if (fs.existsSync(localFilePath)) {
                           phash = await computeDHash(localFilePath);
                         }
-                      } else if (cand.thumbnailUrl.startsWith('http')) {
+                      } else if (cand.thumbnailUrl?.startsWith('http')) {
                         const res = await safeFetch(cand.thumbnailUrl, { timeoutMs: 6000 });
                         if (res.statusCode >= 200 && res.statusCode < 300 && res.buffer.length > 0) {
                           phash = await computeDHash(res.buffer);
@@ -672,8 +698,8 @@ export class PipelineOrchestratorService {
                       if (phash) {
                         cand.mediaPhash = phash;
                       }
-                    } catch {}
-                  }
+                    }
+                  } catch {}
                 }
 
                 // Score new candidates
@@ -681,6 +707,8 @@ export class PipelineOrchestratorService {
                   {
                     title: productTitle,
                     brand: brandName,
+                    imageUrl: productImageUrl,
+                    imageBuffer: productImageBuffer,
                     analysis: analysisResult.attributes as any,
                   },
                   newCandidates
@@ -692,7 +720,7 @@ export class PipelineOrchestratorService {
                   searchId,
                   dHashThreshold: 10,
                   textJaccardThreshold: 0.85,
-                  excludePreviouslySeen: true,
+                  excludePreviouslySeen: process.env.IGNORE_SEEN_VIDEOS !== 'true',
                 });
               }
             } catch (err: any) {
@@ -703,12 +731,12 @@ export class PipelineOrchestratorService {
       }
 
       // ----------------------------------------------------------------------
-      // Stage 10: Finalizing Results & Ranking
+      // Stage 10: Preparing final results & Ranking
       // ----------------------------------------------------------------------
       const stage10Start = Date.now();
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'finalizing_results',
+        stage: 'preparing_final_results',
         status: 'running',
         payload: { message: 'Ranking results and updating final shortfall accounting...' },
       });
@@ -757,7 +785,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'finalizing_results',
+        stage: 'preparing_final_results',
         status: 'done',
         payload: {
           totalDurationMs: Date.now() - startTime,
@@ -785,7 +813,7 @@ export class PipelineOrchestratorService {
 
       await pipelineEventBus.emitAndPersist({
         searchId,
-        stage: 'finalizing_results',
+        stage: 'preparing_final_results',
         status: 'failed',
         payload: {
           error: {
