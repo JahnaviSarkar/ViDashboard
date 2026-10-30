@@ -200,6 +200,21 @@ function isOnlyBrandOrSiteName(title: string, brand?: string, siteName?: string,
   return forbidden.includes(tNorm);
 }
 
+export function cleanBrandName(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  let cleaned = String(raw)
+    .replace(/\s*\|\s*.*$/i, '')
+    .replace(/\s*-\s*official\s*(store|site).*$/i, '')
+    .replace(/\s*-\s*.*$/i, '')
+    .replace(/\s*official\s*(store|site).*$/i, '')
+    .trim();
+  // Reject empty, purely numeric (e.g. "247"), or marketplace names
+  if (!cleaned || /^\d+$/.test(cleaned) || isMarketplace(cleaned)) {
+    return undefined;
+  }
+  return cleaned;
+}
+
 export class ProductResolverService {
   constructor(private cacheRepo = new CacheRepository()) {}
 
@@ -262,8 +277,14 @@ export class ProductResolverService {
           if (!extracted.title || extracted.title === 'Product') extracted.title = enrichedShopify.title || extracted.title;
           if (!extracted.description) extracted.description = enrichedShopify.description;
           if (!extracted.imageUrl) extracted.imageUrl = enrichedShopify.imageUrl;
-          if (enrichedShopify.brand && !isMarketplace(enrichedShopify.brand)) {
-            extracted.brand = enrichedShopify.brand;
+          
+          // Only adopt Shopify vendor if it is a valid non-numeric, non-marketplace brand
+          // and does not overwrite a valid existing JSON-LD brand with a numeric sub-line/model
+          const cleanVendor = cleanBrandName(enrichedShopify.brand);
+          if (cleanVendor) {
+            if (!extracted.brand || /^\d+$/.test(extracted.brand)) {
+              extracted.brand = cleanVendor;
+            }
           }
 
           // PRICE CONSISTENCY & RELIABILITY CHECK:
@@ -525,20 +546,13 @@ export class ProductResolverService {
 
     if (isMarketplaceSite) {
       // Marketplace domain: never assign marketplace name as brand
-      if (jsonLdBrand && !isMarketplace(jsonLdBrand)) {
-        finalBrand = jsonLdBrand.trim();
-      } else {
-        finalBrand = undefined; // Leave empty for marketplaces!
-      }
+      finalBrand = cleanBrandName(jsonLdBrand);
     } else {
-      // Brand-owned site
-      if (jsonLdBrand && !isMarketplace(jsonLdBrand)) {
-        finalBrand = jsonLdBrand.trim();
-      } else if (ogBrand && !isMarketplace(ogBrand)) {
-        finalBrand = ogBrand.trim();
-      } else if (siteName && !isMarketplace(siteName)) {
-        finalBrand = siteName.trim();
-      }
+      // Brand-owned site: Take from JSON-LD brand, Shopify vendor, or og:site_name first, never from title
+      finalBrand =
+        cleanBrandName(jsonLdBrand) ||
+        cleanBrandName(ogBrand) ||
+        cleanBrandName(siteName);
     }
 
     // REQUIREMENT 3: TITLE QUALITY

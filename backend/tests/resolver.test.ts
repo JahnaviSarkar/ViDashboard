@@ -271,6 +271,78 @@ describe('Product Resolver Service & HTML Fixtures', () => {
       expect(result.price).toBe(21.0);
       expect(result.currency).toBe('USD');
     });
+
+    it('resolves brand from JSON-LD or og:site_name and rejects numeric title prefix or numeric vendor (e.g. 247 on Represent)', () => {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta property="og:type" content="product">
+          <meta property="og:site_name" content="REPRESENT | US">
+          <title>247 Oversized Tank - Jet Black</title>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "247 Oversized Tank - Jet Black",
+            "brand": {
+              "@type": "Brand",
+              "name": "Represent Clo"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "90.00",
+              "priceCurrency": "USD"
+            }
+          }
+          </script>
+        </head>
+        <body>
+          <h1>247 Oversized Tank - Jet Black</h1>
+          <button name="add">Add to bag</button>
+        </body>
+        </html>
+      `;
+
+      const result = resolver.extractFromHtml(html, 'https://representclo.com/products/247-oversized-tank-26-jet-black');
+      expect(result.brand).toBe('Represent Clo');
+      expect(result.brand).not.toBe('247');
+      expect(result.title).toBe('247 Oversized Tank - Jet Black');
+    });
+
+    it('falls back to cleaned og:site_name if JSON-LD brand is numeric, never using title prefix', () => {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta property="og:type" content="product">
+          <meta property="og:site_name" content="REPRESENT | Official Store">
+          <title>247 Oversized Tank - Jet Black</title>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "247 Oversized Tank - Jet Black",
+            "brand": "247",
+            "offers": {
+              "@type": "Offer",
+              "price": "90.00",
+              "priceCurrency": "USD"
+            }
+          }
+          </script>
+        </head>
+        <body>
+          <h1>247 Oversized Tank - Jet Black</h1>
+          <button name="add">Add to bag</button>
+        </body>
+        </html>
+      `;
+
+      const result = resolver.extractFromHtml(html, 'https://representclo.com/products/247-oversized-tank-26-jet-black');
+      expect(result.brand).toBe('REPRESENT');
+      expect(result.brand).not.toBe('247');
+    });
   });
 
   // --- IMAGE DIMENSIONS & LOGO DETECTION ---

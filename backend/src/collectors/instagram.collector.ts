@@ -135,6 +135,7 @@ export class InstagramCollector implements Collector {
     const candidates: RawVideoCandidate[] = [];
     const seenIds = new Set<string>();
     let lastError: string | undefined;
+    let totalItemsFetched = 0;
 
     const hashtagsToSearch = queries.instagram.hashtags
       .map((h) => h.replace(/^#/, '').trim())
@@ -203,6 +204,12 @@ export class InstagramCollector implements Collector {
 
     const usable = candidates.length;
     const shortfall = Math.max(0, targetCount - usable);
+    const estimatedCostUsd = Number((totalItemsFetched * 0.0025).toFixed(4));
+
+    logger.info(
+      { source: 'instagram', totalItemsFetched, estimatedCostUsd },
+      'Instagram collection cost reported'
+    );
 
     return {
       source: 'instagram',
@@ -211,6 +218,10 @@ export class InstagramCollector implements Collector {
       usable,
       shortfall,
       candidates,
+      cost: {
+        itemsFetched: totalItemsFetched,
+        estimatedCostUsd,
+      },
       error: shortfall > 0 && lastError ? lastError : undefined,
     };
   }
@@ -231,6 +242,7 @@ export class InstagramCollector implements Collector {
       .filter(Boolean);
 
     let runsCount = 0;
+    let totalItemsFetched = 0;
 
     for (const tag of hashtagsToSearch) {
       if (candidates.length >= targetCount) break;
@@ -277,6 +289,7 @@ export class InstagramCollector implements Collector {
         });
 
         logger.info({ tag, itemsReceived: rawItems.length }, 'Received dataset items from Apify Instagram actor');
+        totalItemsFetched += rawItems.length;
 
         const tagCandidates: RawVideoCandidate[] = [];
 
@@ -355,6 +368,12 @@ export class InstagramCollector implements Collector {
 
     const usable = candidates.length;
     const shortfall = Math.max(0, targetCount - usable);
+    const estimatedCostUsd = Number((totalItemsFetched * 0.0025).toFixed(4));
+
+    logger.info(
+      { source: 'instagram', totalItemsFetched, estimatedCostUsd },
+      'Instagram collection cost reported'
+    );
 
     return {
       source: 'instagram',
@@ -363,6 +382,10 @@ export class InstagramCollector implements Collector {
       usable,
       shortfall,
       candidates,
+      cost: {
+        itemsFetched: totalItemsFetched,
+        estimatedCostUsd,
+      },
       error: shortfall > 0 && lastError ? lastError : undefined,
     };
   }

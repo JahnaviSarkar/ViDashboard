@@ -158,5 +158,29 @@ describe('Query Generation Service and Expansion Tiers', () => {
       expect(queries.meta.searchTerms).toContain('Fenty Beauty');
       expect(queries.expansionTiers.tier1).toContain('Fenty Beauty Wooden Miniature Dollhouse');
     });
+
+    it('rejects bare single-word or numeric brand terms like 247 and combines brand + product type for Meta search', () => {
+      const fashionAnalysis: ProductAnalysis = {
+        ...sampleAnalysis,
+        productType: 'Oversized Tank Top',
+        category: 'Apparel & Accessories / Clothing / Tops',
+      };
+
+      // Numeric brand "247"
+      const numQueries = generator.generate(fashionAnalysis, '247');
+      expect(numQueries.meta.searchTerms).not.toContain('247');
+      expect(numQueries.meta.searchTerms.every((t) => t.split(' ').length >= 2 && t.split(' ').length <= 4)).toBe(true);
+
+      // Single-word brand "Represent"
+      const repQueries = generator.generate(fashionAnalysis, 'Represent');
+      expect(repQueries.meta.searchTerms).not.toContain('Represent');
+      expect(repQueries.meta.searchTerms).toContain('Represent Oversized Tank Top');
+      expect(repQueries.meta.searchTerms).toContain('Represent Oversized Tank');
+      for (const term of repQueries.meta.searchTerms) {
+        const wordCount = term.split(' ').length;
+        expect(wordCount).toBeGreaterThanOrEqual(2);
+        expect(wordCount).toBeLessThanOrEqual(4);
+      }
+    });
   });
 });

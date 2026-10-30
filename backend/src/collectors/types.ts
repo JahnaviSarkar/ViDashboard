@@ -21,6 +21,11 @@ export interface CollectorOptions {
   timeoutMs?: number;
 }
 
+export interface CollectorCostInfo {
+  itemsFetched: number;
+  estimatedCostUsd: number;
+}
+
 export interface CollectorResult {
   source: 'instagram' | 'meta' | 'tiktok';
   requested: number;
@@ -28,6 +33,7 @@ export interface CollectorResult {
   usable: number;
   shortfall: number;
   candidates: RawVideoCandidate[];
+  cost?: CollectorCostInfo;
   error?: string;
 }
 

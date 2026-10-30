@@ -267,5 +267,65 @@ describe('Apify Provider & Reliability Layer', () => {
       expect(result.candidates[0].mediaUrl).toBe('https://example.com/ad2.mp4');
       expect(result.candidates[0].author).toBe('Fenty Official');
     });
+
+    it('treats template placeholders matching /{{.*?}}/ as missing and falls back to ad body or page name', async () => {
+      const mockApifyClient = {
+        hasToken: () => true,
+        callActorSync: vi.fn().mockResolvedValue([
+          // Ad 1: card body has placeholder, snapshot body has real text
+          {
+            ad_archive_id: 'ad_placeholder_1',
+            page_name: 'Brand Advertiser',
+            snapshot: {
+              cards: [
+                {
+                  video_hd_url: 'https://example.com/ad1.mp4',
+                  video_preview_image_url: 'https://example.com/ad1_thumb.jpg',
+                  body: '{{product.brand}} special offer',
+                },
+              ],
+              body: { text: 'Real summer promotion copy here' },
+            },
+          },
+          // Ad 2: both card body and snapshot body have placeholders, falls back to page_name
+          {
+            ad_archive_id: 'ad_placeholder_2',
+            page_name: 'Gauth Official',
+            snapshot: {
+              cards: [
+                {
+                  video_hd_url: 'https://example.com/ad2.mp4',
+                  video_preview_image_url: 'https://example.com/ad2_thumb.jpg',
+                  body: '{{product.name}}',
+                },
+              ],
+              body: { text: '{{product.description}}' },
+            },
+          },
+        ]),
+      } as unknown as ApifyClient;
+
+      const mockCacheRepo = {
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+      } as any;
+
+      const collector = new MetaAdLibraryCollector({
+        token: undefined,
+        apifyClient: mockApifyClient,
+        cacheRepo: mockCacheRepo,
+        mode: 'live',
+      });
+
+      const result = await collector.collect(sampleQueries, { targetCount: 10, searchId: 'placeholder-test' });
+
+      expect(result.collected).toBe(2);
+      expect(result.candidates[0].caption).toBe('Real summer promotion copy here');
+      expect(result.candidates[1].caption).toBe('Gauth Official');
+      expect(result.candidates[0].caption).not.toMatch(/\{\{.*?\}\}/);
+      expect(result.candidates[1].caption).not.toMatch(/\{\{.*?\}\}/);
+      expect(result.cost).toBeDefined();
+      expect(result.cost?.itemsFetched).toBe(2);
+    });
   });
 });

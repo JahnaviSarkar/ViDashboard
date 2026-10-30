@@ -16,6 +16,29 @@ export interface MetaAdLibraryCollectorConfig {
   cacheRepo?: CacheRepository;
 }
 
+/**
+ * Sanitizes ad copy by treating any text containing template placeholders (/\{\{.*?\}\}/)
+ * as missing. Falls back through available text sources, then to the advertiser page name.
+ */
+export function sanitizeMetaAdCaption(
+  rawTexts: Array<string | undefined | null>,
+  pageName: string
+): string {
+  const placeholderRegex = /\{\{.*?\}\}/;
+  for (const t of rawTexts) {
+    if (t && typeof t === 'string') {
+      const trimmed = t.trim();
+      if (trimmed && !placeholderRegex.test(trimmed)) {
+        return trimmed;
+      }
+    }
+  }
+  if (pageName && typeof pageName === 'string' && !placeholderRegex.test(pageName)) {
+    return pageName.trim();
+  }
+  return '';
+}
+
 export class MetaAdLibraryCollector implements Collector {
   readonly source = 'meta' as const;
   private token?: string;
@@ -142,6 +165,7 @@ export class MetaAdLibraryCollector implements Collector {
     const candidates: RawVideoCandidate[] = [];
     const seenIds = new Set<string>();
     let lastError: string | undefined;
+    let totalItemsFetched = 0;
 
     const searchTerms = queries.meta.searchTerms.filter(Boolean);
 
@@ -211,6 +235,12 @@ export class MetaAdLibraryCollector implements Collector {
 
     const usable = candidates.length;
     const shortfall = Math.max(0, targetCount - usable);
+    const estimatedCostUsd = Number((totalItemsFetched * 0.00075).toFixed(4));
+
+    logger.info(
+      { source: 'meta', totalItemsFetched, estimatedCostUsd },
+      'Meta Ad Library collection cost reported'
+    );
 
     return {
       source: 'meta',
@@ -219,6 +249,10 @@ export class MetaAdLibraryCollector implements Collector {
       usable,
       shortfall,
       candidates,
+      cost: {
+        itemsFetched: totalItemsFetched,
+        estimatedCostUsd,
+      },
       error: shortfall > 0 && lastError ? lastError : undefined,
     };
   }
@@ -236,6 +270,7 @@ export class MetaAdLibraryCollector implements Collector {
 
     const searchTerms = queries.meta.searchTerms.filter(Boolean);
     let runsCount = 0;
+    let totalItemsFetched = 0;
 
     for (const term of searchTerms) {
       if (candidates.length >= targetCount) break;
@@ -299,6 +334,7 @@ export class MetaAdLibraryCollector implements Collector {
         });
 
         logger.info({ term, itemsReceived: rawItems.length }, 'Received dataset items from Apify Meta Ads actor');
+        totalItemsFetched += rawItems.length;
 
         const termCandidates: RawVideoCandidate[] = [];
 
@@ -318,7 +354,7 @@ export class MetaAdLibraryCollector implements Collector {
           // Find video asset in cards or direct item properties
           let videoUrl: string | undefined;
           let previewImageUrl: string | undefined;
-          let adBodyText = snapshot.body?.text || item.adText || '';
+          let matchedCardBody: string | undefined;
 
           if (cards.length > 0) {
             for (const card of cards) {
@@ -326,7 +362,7 @@ export class MetaAdLibraryCollector implements Collector {
               if (cardVid) {
                 videoUrl = cardVid;
                 previewImageUrl = card.video_preview_image_url;
-                if (card.body && !adBodyText) adBodyText = card.body;
+                if (card.body) matchedCardBody = card.body;
                 break;
               }
             }
@@ -365,13 +401,19 @@ export class MetaAdLibraryCollector implements Collector {
             item.ad_library_url ||
             `https://www.facebook.com/ads/library/?id=${id}`;
 
+          // Sanitize ad copy: reject template placeholders ({{...}}), fall back to body, then page name
+          const finalCaption = sanitizeMetaAdCaption(
+            [matchedCardBody, snapshot.body?.text, item.adText, snapshot.caption],
+            pageName
+          );
+
           const candidate: RawVideoCandidate = {
             platform: 'meta',
             platformVideoId: id,
             canonicalUrl,
             thumbnailUrl: finalThumbUrl,
             mediaUrl: videoUrl,
-            caption: adBodyText,
+            caption: finalCaption,
             author: pageName,
             postedAt: item.start_date ? new Date(item.start_date) : undefined,
             raw: { ...item, originalThumbnailUrl: originalThumb },
@@ -401,6 +443,12 @@ export class MetaAdLibraryCollector implements Collector {
 
     const usable = candidates.length;
     const shortfall = Math.max(0, targetCount - usable);
+    const estimatedCostUsd = Number((totalItemsFetched * 0.00075).toFixed(4));
+
+    logger.info(
+      { source: 'meta', totalItemsFetched, estimatedCostUsd },
+      'Meta Ad Library collection cost reported'
+    );
 
     return {
       source: 'meta',
@@ -409,6 +457,10 @@ export class MetaAdLibraryCollector implements Collector {
       usable,
       shortfall,
       candidates,
+      cost: {
+        itemsFetched: totalItemsFetched,
+        estimatedCostUsd,
+      },
       error: shortfall > 0 && lastError ? lastError : undefined,
     };
   }

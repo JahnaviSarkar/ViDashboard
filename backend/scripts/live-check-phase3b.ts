@@ -143,3 +143,4 @@ runLiveCheck().catch((err) => {
   console.error('Fatal error during Phase 3b live check:', err);
   process.exit(1);
 });
+

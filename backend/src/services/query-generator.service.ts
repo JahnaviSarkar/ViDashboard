@@ -169,12 +169,42 @@ export class QueryGeneratorService {
     igKeywords.push(`${analysis.dominantColour} ${analysis.productType}`);
     igKeywords.push(`${analysis.material} ${analysis.productType}`);
 
-    // 4. Build Meta Ad Library search terms (commercial intent, real brand only)
-    const metaSearchTerms: string[] = [];
-    if (cleanBrand) metaSearchTerms.push(cleanBrand);
-    metaSearchTerms.push(analysis.productType);
-    metaSearchTerms.push(`${analysis.productType} sale`);
-    metaSearchTerms.push(`${analysis.dominantColour} ${analysis.productType}`);
+    // 4. Build Meta Ad Library search terms (commercial intent, 2 to 4 word phrases)
+    // Rule: Don't use bare brand-ish or numeric terms (e.g. "247"). Combine brand + product type ("Represent oversized tank").
+    const metaTermsSet = new Set<string>();
+
+    const tryAddMetaTerm = (phrase: string) => {
+      const clean = phrase.trim().replace(/\s+/g, ' ');
+      const words = clean.split(' ').filter(Boolean);
+      // Strictly 2 to 4 words, never bare single terms or purely numeric strings
+      if (words.length < 2 || words.length > 4) return;
+      if (/^\d+$/.test(clean.replace(/\s+/g, ''))) return;
+      if (words.some((w) => isMarketplace(w))) return;
+      metaTermsSet.add(clean);
+    };
+
+    if (cleanBrand) {
+      tryAddMetaTerm(`${cleanBrand} ${analysis.productType}`);
+      tryAddMetaTerm(`${cleanBrand} ${analysis.productType} sale`);
+      const conciseType = analysis.productType.split(/\s+/).slice(0, 2).join(' ');
+      tryAddMetaTerm(`${cleanBrand} ${conciseType}`);
+
+      // Allow multi-word non-numeric brand names (e.g. "Fenty Beauty", "Pastel Play Co.")
+      // but strictly reject bare 1-word or numeric terms (e.g. "247", "Represent")
+      const brandWords = cleanBrand.split(/\s+/).filter(Boolean);
+      if (brandWords.length >= 2 && brandWords.length <= 4 && !/^\d+$/.test(cleanBrand)) {
+        tryAddMetaTerm(cleanBrand);
+      }
+    }
+
+    tryAddMetaTerm(`${analysis.productType} sale`);
+    tryAddMetaTerm(analysis.productType);
+    tryAddMetaTerm(`${analysis.dominantColour} ${analysis.productType}`);
+    if (analysis.distinguishingAttributes.length > 0) {
+      tryAddMetaTerm(`${analysis.productType} ${analysis.distinguishingAttributes[0]}`);
+    }
+
+    const metaSearchTerms = Array.from(metaTermsSet).slice(0, 6);
 
     // 5. Build TikTok queries
     const tiktokSearchTerms: string[] = [];
