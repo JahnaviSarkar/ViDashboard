@@ -25,4 +25,9 @@ export class ProductRepository {
     const [result] = await this.db.select().from(products).where(eq(products.searchId, searchId));
     return result || null;
   }
+
+  async update(id: string, data: Partial<ProductInsert>): Promise<ProductSelect | null> {
+    const [result] = await this.db.update(products).set(data).where(eq(products.id, id)).returning();
+    return result || null;
+  }
 }

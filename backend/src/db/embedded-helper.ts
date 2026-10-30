@@ -43,7 +43,9 @@ export async function ensurePostgresRunning(preferredPort: number = 5432): Promi
       persistent: true,
       initdbFlags: ['--encoding=UTF8', '--locale=C'],
       onLog: () => {},
-      onError: () => {},
+      onError: (err: any) => {
+        logger.error({ err }, 'Embedded PostgreSQL error');
+      },
     });
 
     const isInitialized = fs.existsSync(databaseDir) && fs.existsSync(path.join(databaseDir, 'PG_VERSION'));
@@ -52,10 +54,34 @@ export async function ensurePostgresRunning(preferredPort: number = 5432): Promi
       await embeddedServer.initialise();
     }
 
+    const pidFile = path.join(databaseDir, 'postmaster.pid');
+    if (fs.existsSync(pidFile)) {
+      try {
+        const content = fs.readFileSync(pidFile, 'utf8');
+        const pid = parseInt(content.split('\n')[0].trim(), 10);
+        let isRunning = false;
+        if (pid) {
+          try {
+            process.kill(pid, 0);
+            isRunning = true;
+          } catch {
+            isRunning = false;
+          }
+        }
+        if (!isRunning) {
+          logger.warn({ pid }, 'Removing stale postmaster.pid from dead PostgreSQL process');
+          fs.unlinkSync(pidFile);
+        }
+      } catch (err) {
+        logger.warn({ err }, 'Failed to check or remove stale postmaster.pid');
+      }
+    }
+
     try {
       await embeddedServer.start();
       logger.info({ port, databaseDir }, 'Embedded PostgreSQL started successfully');
     } catch (err: any) {
+      logger.error({ err, errMsg: err?.message }, 'embeddedServer.start() FAILED WITH ERROR');
       const errMsg = err?.message || String(err || '');
       if (errMsg.includes(`${port}`)) {
         logger.warn(`Port ${port} in use, trying embedded PostgreSQL on port ${port + 1}`);
@@ -88,6 +114,14 @@ export async function stopEmbeddedPostgres(): Promise<void> {
       logger.info('Embedded PostgreSQL stopped');
     } catch (err) {
       logger.error({ err }, 'Error stopping embedded PostgreSQL');
+    }
+  }
+  const pidFile = path.join(workspaceDataDir, 'postmaster.pid');
+  if (fs.existsSync(pidFile)) {
+    try {
+      fs.unlinkSync(pidFile);
+    } catch {
+      // ignore
     }
   }
 }

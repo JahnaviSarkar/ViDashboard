@@ -293,7 +293,10 @@ export class MetaAdLibraryCollector implements Collector {
           for (const item of cached) {
             if (!seenIds.has(item.platformVideoId)) {
               seenIds.add(item.platformVideoId);
-              candidates.push(item);
+              candidates.push({
+                ...item,
+                postedAt: item.postedAt ? new Date(item.postedAt) : undefined,
+              });
               if (candidates.length >= targetCount) break;
             }
           }

@@ -1,2 +1,5 @@
-// Business logic services module - Phase 2 & 4
-export {};
+export * from './product-resolver.service';
+export * from './query-generator.service';
+export * from './scoring.service';
+export * from './dedup.service';
+export * from './pipeline-orchestrator.service';

@@ -24,11 +24,13 @@ export class VideoRepository {
 
   async upsert(data: Omit<VideoInsert, 'id' | 'firstSeenAt'> & { id?: string }): Promise<VideoSelect> {
     const id = data.id || randomUUID();
+    const postedAt = data.postedAt ? new Date(data.postedAt) : undefined;
     const [result] = await this.db
       .insert(videos)
       .values({
         ...data,
         id,
+        postedAt,
       })
       .onConflictDoUpdate({
         target: [videos.platform, videos.platformVideoId],
@@ -38,7 +40,7 @@ export class VideoRepository {
           mediaUrl: data.mediaUrl,
           caption: data.caption,
           author: data.author,
-          postedAt: data.postedAt,
+          postedAt,
           mediaPhash: data.mediaPhash,
           embedding: data.embedding,
           raw: data.raw,

@@ -7,6 +7,7 @@ import { SearchRepository } from '../src/db/repositories/search.repository';
 import { ProductRepository } from '../src/db/repositories/product.repository';
 import { ProductAnalysisRepository } from '../src/db/repositories/product-analysis.repository';
 import { PipelineEventRepository } from '../src/db/repositories/pipeline-event.repository';
+import { SearchResultRepository } from '../src/db/repositories/search-result.repository';
 import { initBoss, stopBoss } from '../src/queue/boss';
 import { FastifyInstance } from 'fastify';
 
@@ -19,8 +20,6 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
   const orchestrator = new PipelineOrchestratorService();
 
   beforeAll(async () => {
-    await ensurePostgresRunning();
-    await runMigrations();
     await initBoss();
     app = buildApp();
     await app.ready();
@@ -95,12 +94,27 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
     expect(metaEvents.length).toBeGreaterThanOrEqual(2);
     expect(metaEvents[metaEvents.length - 1].status).toBe('done');
 
-    // Phase 4 stages remain skipped
-    const framesEvent = events.find((e) => e.stage === 'extracting_frames');
-    expect(framesEvent?.status).toBe('skipped');
+    const searchResultRepo = new SearchResultRepository();
 
-    const finalEvent = events.find((e) => e.stage === 'finalizing_results');
+    // Phase 4 stages run actively and successfully
+    const framesEvent = events.filter((e) => e.stage === 'extracting_frames').pop();
+    expect(framesEvent?.status).toBe('done');
+
+    const similarityEvent = events.filter((e) => e.stage === 'calculating_similarity').pop();
+    expect(similarityEvent?.status).toBe('done');
+
+    const dedupEvent = events.filter((e) => e.stage === 'removing_duplicates').pop();
+    expect(dedupEvent?.status).toBe('done');
+
+    const finalEvent = events.filter((e) => e.stage === 'finalizing_results').pop();
     expect(finalEvent?.status).toBe('done');
+
+    // Verify search results were persisted in search_results table
+    const storedResults = await searchResultRepo.getBySearchId(searchId);
+    expect(storedResults.length).toBeGreaterThan(0);
+    expect(storedResults[0].matchScore).toBeDefined();
+    expect(storedResults[0].scoreBreakdown).toBeDefined();
+    expect(storedResults[0].explanation).toBeDefined();
   });
 
   it('GET /api/search/:id returns full search details, product, analysis, and source runs', async () => {
