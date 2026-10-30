@@ -67,8 +67,8 @@ export const LeftRail: React.FC<LeftRailProps> = ({
             height: '44px',
             borderRadius: '12px',
             border: 'none',
-            backgroundColor: currentTab === 'home' && !isHistoryOpen ? '#F8EEFC' : 'transparent',
-            color: currentTab === 'home' && !isHistoryOpen ? '#6B2B85' : '#77717F',
+            backgroundColor: currentTab === 'home' && !isHistoryOpen ? '#FDE8F1' : 'transparent',
+            color: currentTab === 'home' && !isHistoryOpen ? '#F2619C' : '#77717F',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -89,8 +89,8 @@ export const LeftRail: React.FC<LeftRailProps> = ({
             height: '44px',
             borderRadius: '12px',
             border: 'none',
-            backgroundColor: isHistoryOpen ? '#EBF1F9' : 'transparent',
-            color: isHistoryOpen ? '#314F85' : '#77717F',
+            backgroundColor: isHistoryOpen ? '#F8EEFC' : 'transparent',
+            color: isHistoryOpen ? '#6B2B85' : '#77717F',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -110,7 +110,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                backgroundColor: '#93ABD9',
+                backgroundColor: '#E7BEF8',
               }}
             />
           )}

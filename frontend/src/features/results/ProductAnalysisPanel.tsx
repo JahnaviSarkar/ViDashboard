@@ -140,12 +140,17 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
               </Badge>
             ))}
 
-            {queries?.meta?.searchTerms &&
-              queries.meta.searchTerms.slice(0, 4).map((term: string, idx: number) => (
-                <Badge key={`meta_${idx}`} size="sm" variant="blueberry" icon={<SearchIcon size={11} />}>
-                  {term}
-                </Badge>
-              ))}
+            {Array.isArray(queries?.meta)
+              ? queries.meta.slice(0, 4).map((term: string, idx: number) => (
+                  <Badge key={`meta_${idx}`} size="sm" variant="blueberry" icon={<SearchIcon size={11} />}>
+                    {term}
+                  </Badge>
+                ))
+              : queries?.meta?.searchTerms?.slice(0, 4).map((term: string, idx: number) => (
+                  <Badge key={`meta_${idx}`} size="sm" variant="blueberry" icon={<SearchIcon size={11} />}>
+                    {term}
+                  </Badge>
+                ))}
           </div>
         </div>
       )}

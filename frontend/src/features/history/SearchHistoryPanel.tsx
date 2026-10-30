@@ -152,7 +152,7 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                   style={{
                     fontSize: '0.875rem',
                     fontWeight: isActive ? 800 : 700,
-                    color: '#292633',
+                    color: isActive ? '#4A154B' : '#292633',
                     lineHeight: 1.3,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,

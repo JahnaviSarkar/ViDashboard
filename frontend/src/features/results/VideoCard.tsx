@@ -181,8 +181,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       }}
       onClick={() => onOpenPreview(result)}
     >
-      {/* Thumbnail Banner */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '80%', backgroundColor: '#FAF8F7' }}>
+      {/* 9:16 Aspect Ratio Video Reel Thumbnail */}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '9 / 16', backgroundColor: '#FAF8F7', overflow: 'hidden' }}>
         {video.thumbnailUrl ? (
           <img
             src={video.thumbnailUrl}

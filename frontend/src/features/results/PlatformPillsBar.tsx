@@ -36,9 +36,9 @@ export const PlatformPillsBar: React.FC<PlatformPillsBarProps> = ({
           gap: '8px',
           padding: '8px 18px',
           borderRadius: 'var(--radius-pill)',
-          border: selectedPlatform === 'all' ? '2px solid #292633' : '1px solid #E9E3ED',
-          backgroundColor: selectedPlatform === 'all' ? '#FFFFFF' : '#FFFFFF',
-          color: '#292633',
+          border: selectedPlatform === 'all' ? '2px solid #F2619C' : '1px solid #E9E3ED',
+          backgroundColor: selectedPlatform === 'all' ? '#FDE8F1' : '#FFFFFF',
+          color: selectedPlatform === 'all' ? '#B82869' : '#292633',
           fontWeight: selectedPlatform === 'all' ? 800 : 600,
           fontSize: '0.8125rem',
           cursor: 'pointer',
@@ -48,7 +48,8 @@ export const PlatformPillsBar: React.FC<PlatformPillsBarProps> = ({
         <span>All Platforms</span>
         <span
           style={{
-            backgroundColor: '#F5F2F7',
+            backgroundColor: selectedPlatform === 'all' ? '#F9A8CE' : '#F5F2F7',
+            color: selectedPlatform === 'all' ? '#7A1040' : '#292633',
             padding: '2px 8px',
             borderRadius: 'var(--radius-pill)',
             fontSize: '0.75rem',
