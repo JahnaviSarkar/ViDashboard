@@ -15,19 +15,21 @@ export const MockDataBanner: React.FC<MockDataBannerProps> = ({ isMock }) => {
         alignItems: 'center',
         gap: '10px',
         padding: '10px 18px',
-        backgroundColor: '#FCFBE8',
-        border: '1.5px solid #EDE986',
+        backgroundColor: 'rgba(237, 233, 134, 0.15)',
+        border: '1.5px solid rgba(237, 233, 134, 0.35)',
         borderRadius: 'var(--radius-card)',
-        color: '#6E6B15',
+        color: '#FEF9C3',
         fontSize: '0.8125rem',
-        fontWeight: 700,
-        boxShadow: '0 2px 8px rgba(237, 233, 134, 0.25)',
+        fontWeight: 600,
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
         marginBottom: '16px',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
       }}
     >
-      <AlertTriangle size={18} color="#D97706" style={{ flexShrink: 0 }} />
+      <AlertTriangle size={18} color="#EDE986" style={{ flexShrink: 0 }} />
       <span>
-        ⚡ <strong>MOCK DATA BANNER:</strong> Displaying simulated candidate video items (MODE=mock). Set <code>MODE=live</code> in <code>.env</code> with real API keys for production platform collection.
+        ⚡ <strong style={{ color: '#EDE986' }}>MOCK DATA BANNER:</strong> Displaying simulated candidate video items (MODE=mock). Set <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>MODE=live</code> in <code style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 5px', borderRadius: '4px' }}>.env</code> with real API keys for production platform collection.
       </span>
     </div>
   );

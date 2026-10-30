@@ -35,33 +35,33 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
   return (
     <div
       style={{
-        width: '300px',
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-        backgroundColor: '#FFFFFF',
-        borderRight: '1px solid #E9E3ED',
+        width: '320px',
+        height: '100%',
+        backgroundColor: 'rgba(20, 11, 5, 0.88)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderRight: '1px solid rgba(255, 255, 255, 0.12)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
         zIndex: 40,
-        boxShadow: '2px 0 12px rgba(147, 171, 217, 0.08)',
+        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.5)',
         animation: 'fadeIn 0.2s ease-out',
       }}
     >
       {/* Header */}
       <div
         style={{
-          padding: '16px 18px',
-          borderBottom: '1px solid #E9E3ED',
+          padding: '16px 20px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Clock size={18} color="#93ABD9" />
-          <span style={{ fontWeight: 800, fontSize: '0.9375rem', color: '#292633' }}>
+          <Clock size={18} color="#FBBF24" />
+          <span style={{ fontWeight: 800, fontSize: '0.9375rem', color: '#FFFFFF' }}>
             Search History
           </span>
         </div>
@@ -70,34 +70,35 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
           type="button"
           onClick={onClose}
           style={{
-            background: 'transparent',
-            border: 'none',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             cursor: 'pointer',
-            color: '#77717F',
+            color: 'rgba(254, 243, 199, 0.8)',
             display: 'flex',
-            padding: '4px',
+            padding: '5px',
             borderRadius: 'var(--radius-sm)',
+            transition: 'all 0.15s ease',
           }}
           title="Collapse Panel"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={16} />
         </button>
       </div>
 
       {/* Search Input Box */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #E9E3ED' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.10)' }}>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#FAF8F7',
-            border: '1px solid #E9E3ED',
+            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid rgba(255, 255, 255, 0.14)',
             borderRadius: 'var(--radius-pill)',
-            padding: '6px 12px',
+            padding: '7px 14px',
             gap: '8px',
           }}
         >
-          <SearchIcon size={14} color="#77717F" />
+          <SearchIcon size={14} color="rgba(254, 243, 199, 0.6)" />
           <input
             type="text"
             placeholder="Filter past searches..."
@@ -108,7 +109,7 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
               background: 'transparent',
               outline: 'none',
               fontSize: '0.8125rem',
-              color: '#292633',
+              color: '#FFFFFF',
               width: '100%',
               fontFamily: 'var(--font-sans)',
             }}
@@ -117,10 +118,10 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
       </div>
 
       {/* History Items List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {filteredHistory.length === 0 ? (
-          <div style={{ padding: '24px 12px', textAlign: 'center', color: '#77717F', fontSize: '0.8125rem' }}>
-            No searches found.
+          <div style={{ padding: '32px 16px', textAlign: 'center', color: 'rgba(254, 243, 199, 0.6)', fontSize: '0.8125rem' }}>
+            No past searches found.
           </div>
         ) : (
           filteredHistory.map((item) => {
@@ -139,12 +140,12 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                 onClick={() => onSelectSearch(item.id)}
                 style={{
                   padding: '12px 14px',
-                  borderRadius: '14px',
-                  backgroundColor: isActive ? '#E7BEF8' : '#FAF8F7',
-                  border: `1px solid ${isActive ? '#D8A5EC' : '#E9E3ED'}`,
+                  borderRadius: '16px',
+                  backgroundColor: isActive ? 'rgba(231, 190, 248, 0.22)' : 'rgba(255, 255, 255, 0.05)',
+                  border: `1px solid ${isActive ? 'rgba(231, 190, 248, 0.50)' : 'rgba(255, 255, 255, 0.10)'}`,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  boxShadow: isActive ? '0 2px 8px rgba(231, 190, 248, 0.35)' : 'none',
+                  boxShadow: isActive ? '0 0 16px rgba(231, 190, 248, 0.25)' : 'none',
                 }}
               >
                 {/* Title */}
@@ -152,8 +153,8 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                   style={{
                     fontSize: '0.875rem',
                     fontWeight: isActive ? 800 : 700,
-                    color: isActive ? '#4A154B' : '#292633',
-                    lineHeight: 1.3,
+                    color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.92)',
+                    lineHeight: 1.35,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
@@ -164,11 +165,11 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                 </div>
 
                 {/* Timestamp */}
-                <div style={{ fontSize: '0.6875rem', color: '#77717F', marginTop: '6px' }}>
+                <div style={{ fontSize: '0.6875rem', color: 'rgba(254, 243, 199, 0.60)', marginTop: '6px' }}>
                   {formattedDate}
                 </div>
 
-                {/* Stats Chips: Result Count & Unique-Video Count */}
+                {/* Stats Chips */}
                 <div style={{ display: 'flex', gap: '6px', marginTop: '8px', alignItems: 'center' }}>
                   <span
                     style={{
@@ -176,9 +177,9 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: 'var(--radius-pill)',
-                      backgroundColor: isActive ? '#FFFFFF' : '#FFFFFF',
-                      color: '#292633',
-                      border: '1px solid #E9E3ED',
+                      backgroundColor: 'rgba(242, 97, 156, 0.20)',
+                      color: '#FFB3D1',
+                      border: '1px solid rgba(242, 97, 156, 0.40)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -194,9 +195,9 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: 'var(--radius-pill)',
-                      backgroundColor: isActive ? '#FFFFFF' : '#FFFFFF',
-                      color: '#314F85',
-                      border: '1px solid #93ABD9',
+                      backgroundColor: 'rgba(147, 171, 217, 0.20)',
+                      color: '#BFD0EF',
+                      border: '1px solid rgba(147, 171, 217, 0.40)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -214,4 +215,3 @@ export const SearchHistoryPanel: React.FC<SearchHistoryPanelProps> = ({
     </div>
   );
 };
-

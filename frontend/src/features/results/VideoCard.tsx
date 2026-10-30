@@ -79,8 +79,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   const popoverContent = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontWeight: 800, fontSize: '0.875rem', color: '#292633' }}>
-          Visual Evidence & Rubric
+        <span style={{ fontWeight: 800, fontSize: '0.875rem', color: '#FFFFFF' }}>
+          Visual Evidence &amp; Rubric
         </span>
         <span
           style={{
@@ -88,8 +88,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             fontWeight: 800,
             padding: '2px 8px',
             borderRadius: 'var(--radius-pill)',
-            backgroundColor: matchScore >= 60 ? '#D1FAE5' : '#FEE2E2',
-            color: matchScore >= 60 ? '#065F46' : '#991B1B',
+            backgroundColor: matchScore >= 60 ? 'rgba(52, 211, 153, 0.20)' : 'rgba(248, 113, 113, 0.20)',
+            color: matchScore >= 60 ? '#34D399' : '#F87171',
+            border: `1px solid ${matchScore >= 60 ? 'rgba(52, 211, 153, 0.40)' : 'rgba(248, 113, 113, 0.40)'}`,
           }}
         >
           {matchScore}% Match
@@ -100,15 +101,16 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       <div
         style={{
           padding: '8px 10px',
-          backgroundColor: '#FAF8F7',
+          backgroundColor: 'rgba(20, 11, 5, 0.70)',
           borderRadius: '10px',
           fontSize: '0.8125rem',
           lineHeight: 1.45,
-          color: '#292633',
+          color: '#FFFFFF',
+          border: '1px solid rgba(255, 255, 255, 0.10)',
           borderLeft: `3px solid ${getScoreColor(matchScore)}`,
         }}
       >
-        <span style={{ fontWeight: 700, display: 'block', marginBottom: '2px', color: '#77717F', fontSize: '0.75rem' }}>
+        <span style={{ fontWeight: 700, display: 'block', marginBottom: '2px', color: 'rgba(254, 243, 199, 0.70)', fontSize: '0.75rem' }}>
           Grounding Citation:
         </span>
         {explanation || 'Evaluated against target product visual silhouette.'}
@@ -117,7 +119,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       {/* Attribute Verdicts */}
       {scoreBreakdown?.attributeVerdicts && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: '#77717F', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: 'rgba(254, 243, 199, 0.70)', textTransform: 'uppercase' }}>
             Attribute Verdicts
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -130,16 +132,16 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                   gap: '6px',
                   fontSize: '0.75rem',
                   padding: '4px 6px',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
                   borderRadius: '6px',
-                  border: '1px solid #E9E3ED',
+                  border: '1px solid rgba(255, 255, 255, 0.10)',
                 }}
               >
                 {getVerdictIcon(val)}
-                <span style={{ textTransform: 'capitalize', color: '#77717F', flex: 1 }}>
+                <span style={{ textTransform: 'capitalize', color: 'rgba(254, 243, 199, 0.75)', flex: 1 }}>
                   {key.replace(/([A-Z])/g, ' $1')}
                 </span>
-                <span style={{ fontWeight: 700, color: '#292633' }}>{val}</span>
+                <span style={{ fontWeight: 700, color: '#FFFFFF' }}>{val}</span>
               </div>
             ))}
           </div>
@@ -152,9 +154,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           fontSize: '0.6875rem',
-          color: '#77717F',
+          color: 'rgba(254, 243, 199, 0.70)',
           paddingTop: '6px',
-          borderTop: '1px solid #E9E3ED',
+          borderTop: '1px solid rgba(255, 255, 255, 0.10)',
         }}
       >
         <span>Cosine: {scoreBreakdown?.embeddingScore ?? 0}%</span>
@@ -175,14 +177,17 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         height: '100%',
         cursor: 'pointer',
         borderRadius: '20px',
-        border: '1px solid #E9E3ED',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
         overflow: 'hidden',
-        boxShadow: '0 4px 18px rgba(147, 171, 217, 0.12)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
+        backgroundColor: 'rgba(255, 255, 255, 0.06)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}
       onClick={() => onOpenPreview(result)}
     >
       {/* 9:16 Aspect Ratio Video Reel Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '9 / 16', backgroundColor: '#FAF8F7', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '9 / 16', backgroundColor: 'rgba(0, 0, 0, 0.35)', overflow: 'hidden' }}>
         {video.thumbnailUrl ? (
           <img
             src={video.thumbnailUrl}
@@ -211,7 +216,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               color: '#93ABD9',
-              backgroundColor: '#F5F2F7',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
             }}
           >
             <Camera size={36} />
@@ -249,18 +254,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                 onToggleShortlist(result);
               }}
               style={{
-                width: '30px',
-                height: '30px',
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
-                backgroundColor: isShortlisted ? '#F2619C' : 'rgba(255, 255, 255, 0.9)',
-                color: isShortlisted ? '#FFFFFF' : '#77717F',
-                border: 'none',
+                backgroundColor: isShortlisted ? '#F2619C' : 'rgba(20, 11, 5, 0.75)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.20)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.40)',
                 transition: 'all 0.15s ease',
+                backdropFilter: 'blur(8px)',
               }}
               title={isShortlisted ? 'Remove from shortlist' : 'Save to shortlist'}
             >
@@ -275,21 +281,23 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             position: 'absolute',
             bottom: '10px',
             right: '10px',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(4px)',
+            backgroundColor: 'rgba(20, 11, 5, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             borderRadius: 'var(--radius-pill)',
             padding: '3px 10px',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            gap: '5px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             zIndex: 2,
           }}
         >
           <span style={{ fontSize: '0.875rem', fontWeight: 800, color: getScoreColor(matchScore) }}>
             {matchScore}%
           </span>
-          <span style={{ fontSize: '0.6875rem', color: '#77717F', fontWeight: 700 }}>
+          <span style={{ fontSize: '0.6875rem', color: 'rgba(254, 243, 199, 0.70)', fontWeight: 700 }}>
             Match
           </span>
         </div>
@@ -300,7 +308,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         <p
           style={{
             fontSize: '0.8125rem',
-            color: '#292633',
+            color: '#FFFFFF',
             lineHeight: 1.45,
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -318,8 +326,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       <div
         style={{
           padding: '10px 16px',
-          backgroundColor: isInstagram ? '#F8EEFC' : '#EBF1F9',
-          borderTop: `1px solid ${isInstagram ? '#E7BEF8' : '#93ABD9'}`,
+          backgroundColor: isInstagram ? 'rgba(231, 190, 248, 0.14)' : 'rgba(147, 171, 217, 0.14)',
+          borderTop: `1px solid ${isInstagram ? 'rgba(231, 190, 248, 0.25)' : 'rgba(147, 171, 217, 0.25)'}`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -328,12 +336,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       >
         {/* Platform & Creator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', maxWidth: '60%', overflow: 'hidden' }}>
-          {isInstagram ? <Instagram size={14} color="#E1306C" /> : <Flame size={14} color="#0064E0" />}
+          {isInstagram ? <Instagram size={14} color="#E7BEF8" /> : <Flame size={14} color="#93ABD9" />}
           <span
             style={{
               fontSize: '0.75rem',
               fontWeight: 700,
-              color: isInstagram ? '#6B2B85' : '#314F85',
+              color: isInstagram ? '#E7BEF8' : '#93ABD9',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -353,7 +361,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                   alignItems: 'center',
                   gap: '3px',
                   fontSize: '0.75rem',
-                  color: isInstagram ? '#6B2B85' : '#314F85',
+                  color: isInstagram ? '#E7BEF8' : '#93ABD9',
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}
@@ -369,7 +377,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             href={video.canonicalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: '#77717F', display: 'flex', padding: '2px' }}
+            style={{ color: 'rgba(254, 243, 199, 0.70)', display: 'flex', padding: '2px' }}
             title="Open original video"
           >
             <ExternalLink size={13} />

@@ -26,10 +26,12 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const baseStyles: React.CSSProperties = {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 'var(--radius-card)',
-    border: border ? '1px solid #E9E3ED' : 'none',
-    boxShadow: 'var(--shadow-card)',
+    backgroundColor: 'var(--bg-card, rgba(255, 255, 255, 0.06))',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderRadius: 'var(--radius-card, 20px)',
+    border: border ? '1px solid var(--border-card, rgba(255, 255, 255, 0.12))' : 'none',
+    boxShadow: 'var(--shadow-card, 0 8px 32px rgba(0, 0, 0, 0.25))',
     padding: getPadding(),
     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
     position: 'relative',

@@ -18,22 +18,22 @@ export const Badge: React.FC<BadgeProps> = ({
   const getVariantStyles = (): React.CSSProperties => {
     switch (variant) {
       case 'raspberry':
-        return { backgroundColor: '#FDE8F1', color: '#B82869', border: '1px solid #F9A8CE' };
+        return { backgroundColor: 'rgba(242, 97, 156, 0.20)', color: '#FFB3D1', border: '1px solid rgba(242, 97, 156, 0.40)' };
       case 'lilac':
-        return { backgroundColor: '#F8EEFC', color: '#6B2B85', border: '1px solid #E7BEF8' };
+        return { backgroundColor: 'rgba(231, 190, 248, 0.20)', color: '#F3D5FC', border: '1px solid rgba(231, 190, 248, 0.40)' };
       case 'blueberry':
-        return { backgroundColor: '#EBF1F9', color: '#314F85', border: '1px solid #93ABD9' };
+        return { backgroundColor: 'rgba(147, 171, 217, 0.20)', color: '#BFD0EF', border: '1px solid rgba(147, 171, 217, 0.40)' };
       case 'lemon':
-        return { backgroundColor: '#FCFBE8', color: '#6E6B15', border: '1px solid #EDE986' };
+        return { backgroundColor: 'rgba(237, 233, 134, 0.20)', color: '#F9F7A8', border: '1px solid rgba(237, 233, 134, 0.40)' };
       case 'success':
-        return { backgroundColor: '#D1FAE5', color: '#065F46', border: '1px solid #6EE7B7' };
+        return { backgroundColor: 'rgba(52, 211, 153, 0.20)', color: '#6EE7B7', border: '1px solid rgba(52, 211, 153, 0.40)' };
       case 'warning':
-        return { backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' };
+        return { backgroundColor: 'rgba(251, 191, 36, 0.20)', color: '#FCD34D', border: '1px solid rgba(251, 191, 36, 0.40)' };
       case 'danger':
-        return { backgroundColor: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5' };
+        return { backgroundColor: 'rgba(248, 113, 113, 0.20)', color: '#FCA5A5', border: '1px solid rgba(248, 113, 113, 0.40)' };
       case 'neutral':
       default:
-        return { backgroundColor: '#FAF8F7', color: '#77717F', border: '1px solid #E9E3ED' };
+        return { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(254, 243, 199, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)' };
     }
   };
 

@@ -25,7 +25,7 @@ export const Slider: React.FC<SliderProps> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {label && (
-          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#292633' }}>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main, #FFFFFF)' }}>
             {label}
           </span>
         )}
@@ -34,11 +34,11 @@ export const Slider: React.FC<SliderProps> = ({
             fontSize: '0.8125rem',
             fontWeight: 800,
             padding: '2px 10px',
-            backgroundColor: '#FDE8F1',
-            color: '#B82869',
+            backgroundColor: 'rgba(242, 97, 156, 0.2)',
+            color: '#F9A8CE',
             borderRadius: 'var(--radius-pill)',
             fontFamily: 'var(--font-mono)',
-            border: '1px solid #F9A8CE',
+            border: '1px solid rgba(242, 97, 156, 0.4)',
           }}
         >
           {value}{unit}

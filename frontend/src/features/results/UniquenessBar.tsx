@@ -29,20 +29,20 @@ export const UniquenessBar: React.FC<UniquenessBarProps> = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ fontSize: '0.8125rem' }}>
-            <span style={{ color: '#77717F' }}>Raw Collected: </span>
-            <strong style={{ color: '#292633' }}>{totalCollected}</strong>
+            <span style={{ color: 'rgba(254, 243, 199, 0.70)' }}>Raw Collected: </span>
+            <strong style={{ color: '#FFFFFF' }}>{totalCollected}</strong>
           </div>
           <div style={{ fontSize: '0.8125rem' }}>
-            <span style={{ color: '#77717F' }}>Duplicates Removed: </span>
-            <strong style={{ color: '#6B2B85' }}>-{duplicatesRemoved}</strong>
+            <span style={{ color: 'rgba(254, 243, 199, 0.70)' }}>Duplicates Removed: </span>
+            <strong style={{ color: '#E7BEF8' }}>-{duplicatesRemoved}</strong>
           </div>
           <div style={{ fontSize: '0.8125rem' }}>
-            <span style={{ color: '#77717F' }}>Previously Seen Filtered: </span>
-            <strong style={{ color: '#D97706' }}>-{previouslySeenFiltered}</strong>
+            <span style={{ color: 'rgba(254, 243, 199, 0.70)' }}>Previously Seen Filtered: </span>
+            <strong style={{ color: '#EDE986' }}>-{previouslySeenFiltered}</strong>
           </div>
           <div style={{ fontSize: '0.8125rem' }}>
-            <span style={{ color: '#77717F' }}>New Unique: </span>
-            <strong style={{ color: '#314F85' }}>{uniqueRemaining}</strong>
+            <span style={{ color: 'rgba(254, 243, 199, 0.70)' }}>New Unique: </span>
+            <strong style={{ color: '#93ABD9' }}>{uniqueRemaining}</strong>
           </div>
         </div>
 
@@ -54,15 +54,16 @@ export const UniquenessBar: React.FC<UniquenessBarProps> = ({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '4px 12px',
+            padding: '5px 14px',
             borderRadius: 'var(--radius-pill)',
-            border: showPreviouslySeen ? '1.5px solid #F2619C' : '1px solid #E9E3ED',
-            backgroundColor: showPreviouslySeen ? '#FDE8F1' : '#FFFFFF',
-            color: showPreviouslySeen ? '#B82869' : '#77717F',
+            border: showPreviouslySeen ? '1.5px solid #F2619C' : '1px solid rgba(255, 255, 255, 0.18)',
+            backgroundColor: showPreviouslySeen ? 'rgba(242, 97, 156, 0.22)' : 'rgba(255, 255, 255, 0.08)',
+            color: showPreviouslySeen ? '#F2619C' : '#FFFFFF',
             fontSize: '0.75rem',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.15s ease',
+            backdropFilter: 'blur(8px)',
           }}
         >
           {showPreviouslySeen ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -75,7 +76,7 @@ export const UniquenessBar: React.FC<UniquenessBarProps> = ({
         style={{
           width: '100%',
           height: '8px',
-          backgroundColor: '#F5F2F7',
+          backgroundColor: 'rgba(255, 255, 255, 0.10)',
           borderRadius: 'var(--radius-pill)',
           overflow: 'hidden',
           display: 'flex',

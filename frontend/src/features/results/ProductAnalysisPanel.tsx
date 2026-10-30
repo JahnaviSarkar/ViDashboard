@@ -21,7 +21,7 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
   const hashtags = analysis?.hashtags || [];
 
   return (
-    <Card padding="md" style={{ border: '1px solid #E9E3ED', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Card padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {/* Product Image */}
         {product?.imageUrl && (
@@ -31,10 +31,10 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
               height: '100px',
               borderRadius: '16px',
               overflow: 'hidden',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E9E3ED',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
               flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(147, 171, 217, 0.1)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
             }}
           >
             <img
@@ -54,7 +54,7 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
               </Badge>
             )}
             {product?.category && (
-              <span style={{ fontSize: '0.75rem', color: '#77717F' }}>
+              <span style={{ fontSize: '0.75rem', color: 'rgba(254, 243, 199, 0.70)' }}>
                 {product.category}
               </span>
             )}
@@ -63,19 +63,19 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
                 href={product.canonicalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: '#77717F', display: 'inline-flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}
+                style={{ color: 'rgba(254, 243, 199, 0.70)', display: 'inline-flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}
               >
                 <ExternalLink size={12} />
               </a>
             )}
           </div>
 
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#292633', lineHeight: 1.3, marginBottom: '6px' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1.3, marginBottom: '6px' }}>
             {product?.title || 'Resolved Product'}
           </h2>
 
           {product?.price && (
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#10B981' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#34D399' }}>
               {product.currency || ''} {product.price}
             </div>
           )}
@@ -84,7 +84,7 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
         {/* Image Brain Attributes Chips */}
         {attrs && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '420px', flex: 1 }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#77717F', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(254, 243, 199, 0.75)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Image Brain Visual Attributes
             </span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -123,14 +123,14 @@ export const ProductAnalysisPanel: React.FC<ProductAnalysisPanelProps> = ({ prod
         <div
           style={{
             paddingTop: '12px',
-            borderTop: '1px solid #E9E3ED',
+            borderTop: '1px solid rgba(255, 255, 255, 0.10)',
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
           }}
         >
-          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#77717F', textTransform: 'uppercase' }}>
-            Generated Search Queries & Hashtags
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(254, 243, 199, 0.75)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Generated Search Queries &amp; Hashtags
           </span>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>

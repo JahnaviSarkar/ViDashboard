@@ -20,17 +20,22 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     <aside
       style={{
         width: '64px',
-        backgroundColor: '#FFFFFF',
-        borderRight: '1px solid #E9E3ED',
+        backgroundColor: 'rgba(255, 255, 255, 0.10)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: 'var(--radius-pill, 9999px)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '16px 0',
+        padding: '16px 8px',
+        margin: '24px 0 24px 20px',
         zIndex: 50,
         flexShrink: 0,
-        height: '100vh',
+        height: 'fit-content',
         position: 'sticky',
-        top: 0,
+        top: '24px',
       }}
     >
       {/* Brand Icon */}
@@ -39,25 +44,25 @@ export const LeftRail: React.FC<LeftRailProps> = ({
         style={{
           width: '42px',
           height: '42px',
-          borderRadius: '14px',
-          backgroundColor: '#FDE8F1',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(242, 97, 156, 0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#F2619C',
+          color: '#FFB3D1',
           cursor: 'pointer',
-          marginBottom: '28px',
-          border: '1px solid #F9A8CE',
-          boxShadow: '0 2px 8px rgba(242, 97, 156, 0.25)',
-          transition: 'transform 0.15s ease',
+          marginBottom: '20px',
+          border: '1px solid rgba(242, 97, 156, 0.50)',
+          boxShadow: '0 0 16px rgba(242, 97, 156, 0.35)',
+          transition: 'all 0.2s ease',
         }}
         title="ViDashboard"
       >
-        <Sparkles size={22} />
+        <Sparkles size={20} />
       </div>
 
       {/* Nav Icons */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', alignItems: 'center' }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', alignItems: 'center' }}>
         {/* Home / Discover */}
         <button
           type="button"
@@ -65,10 +70,11 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           style={{
             width: '44px',
             height: '44px',
-            borderRadius: '12px',
+            borderRadius: '50%',
             border: 'none',
-            backgroundColor: currentTab === 'home' && !isHistoryOpen ? '#FDE8F1' : 'transparent',
-            color: currentTab === 'home' && !isHistoryOpen ? '#F2619C' : '#77717F',
+            backgroundColor: currentTab === 'home' && !isHistoryOpen ? 'rgba(242, 97, 156, 0.28)' : 'transparent',
+            color: currentTab === 'home' && !isHistoryOpen ? '#FFB3D1' : 'rgba(254, 243, 199, 0.70)',
+            boxShadow: currentTab === 'home' && !isHistoryOpen ? '0 0 14px rgba(242, 97, 156, 0.3)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -77,7 +83,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           }}
           title="Discover / Home"
         >
-          <Compass size={22} />
+          <Compass size={20} />
         </button>
 
         {/* History Toggle */}
@@ -87,10 +93,11 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           style={{
             width: '44px',
             height: '44px',
-            borderRadius: '12px',
+            borderRadius: '50%',
             border: 'none',
-            backgroundColor: isHistoryOpen ? '#F8EEFC' : 'transparent',
-            color: isHistoryOpen ? '#6B2B85' : '#77717F',
+            backgroundColor: isHistoryOpen ? 'rgba(231, 190, 248, 0.28)' : 'transparent',
+            color: isHistoryOpen ? '#F3D5FC' : 'rgba(254, 243, 199, 0.70)',
+            boxShadow: isHistoryOpen ? '0 0 14px rgba(231, 190, 248, 0.3)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -100,7 +107,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           }}
           title="Search History"
         >
-          <Clock size={22} />
+          <Clock size={20} />
           {isHistoryOpen && (
             <div
               style={{
@@ -111,6 +118,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
                 height: '6px',
                 borderRadius: '50%',
                 backgroundColor: '#E7BEF8',
+                boxShadow: '0 0 6px #E7BEF8',
               }}
             />
           )}
@@ -123,10 +131,11 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           style={{
             width: '44px',
             height: '44px',
-            borderRadius: '12px',
+            borderRadius: '50%',
             border: 'none',
-            backgroundColor: currentTab === 'shortlist' ? '#FDE8F1' : 'transparent',
-            color: currentTab === 'shortlist' ? '#F2619C' : '#77717F',
+            backgroundColor: currentTab === 'shortlist' ? 'rgba(242, 97, 156, 0.28)' : 'transparent',
+            color: currentTab === 'shortlist' ? '#FFB3D1' : 'rgba(254, 243, 199, 0.70)',
+            boxShadow: currentTab === 'shortlist' ? '0 0 14px rgba(242, 97, 156, 0.3)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -136,7 +145,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           }}
           title="Shortlist"
         >
-          <Bookmark size={22} />
+          <Bookmark size={20} />
           {shortlistCount > 0 && (
             <span
               style={{
@@ -150,6 +159,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
                 fontWeight: 800,
                 padding: '1px 5px',
                 lineHeight: 1,
+                boxShadow: '0 0 8px rgba(242, 97, 156, 0.5)',
               }}
             >
               {shortlistCount}
@@ -160,4 +170,3 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     </aside>
   );
 };
-

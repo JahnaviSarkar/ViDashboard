@@ -138,10 +138,10 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
       {/* Top Header / Action Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#292633', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
             Video Match Intelligence
           </h1>
-          <span style={{ fontSize: '0.8125rem', color: '#77717F' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.70)' }}>
             Showing {filteredResults.length} scored candidates above {minScore}% match
           </span>
         </div>
@@ -208,26 +208,27 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
 
           {/* Sort Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8125rem', color: '#77717F', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.75)', fontWeight: 700, whiteSpace: 'nowrap' }}>
               Sort:
             </span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               style={{
-                backgroundColor: '#FFFFFF',
-                color: '#292633',
-                border: '1.5px solid #E9E3ED',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1.5px solid rgba(255, 255, 255, 0.18)',
                 borderRadius: 'var(--radius-pill)',
                 padding: '8px 14px',
                 fontSize: '0.8125rem',
                 fontWeight: 600,
                 outline: 'none',
                 cursor: 'pointer',
+                backdropFilter: 'blur(12px)',
               }}
             >
-              <option value="score">Highest Match Score</option>
-              <option value="date">Newest First</option>
+              <option value="score" style={{ backgroundColor: '#1E1107', color: '#FFFFFF' }}>Highest Match Score</option>
+              <option value="date" style={{ backgroundColor: '#1E1107', color: '#FFFFFF' }}>Newest First</option>
             </select>
           </div>
         </div>
@@ -236,13 +237,13 @@ export const ResultsDashboardView: React.FC<ResultsDashboardViewProps> = ({
       {/* Video Cards Grid */}
       {filteredResults.length === 0 ? (
         <Card padding="lg" style={{ textAlign: 'center', padding: '60px 24px' }}>
-          <AlertTriangle size={36} color="#93ABD9" style={{ margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#292633', marginBottom: '8px' }}>
+          <AlertTriangle size={36} color="#EDE986" style={{ margin: '0 auto 12px' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>
             {previouslySeenFiltered > 0 && !showPreviouslySeen
               ? `${previouslySeenFiltered} Candidate Videos Filtered as Previously Seen`
               : 'No matching videos match the current filters'}
           </h3>
-          <p style={{ color: '#77717F', fontSize: '0.875rem', maxWidth: '460px', margin: '0 auto 20px' }}>
+          <p style={{ color: 'rgba(254, 243, 199, 0.70)', fontSize: '0.875rem', maxWidth: '460px', margin: '0 auto 20px' }}>
             {previouslySeenFiltered > 0 && !showPreviouslySeen
               ? `All candidate videos from this search were detected in cross-search deduplication and are tagged as "Seen before". Click below to reveal them.`
               : 'Try lowering the score threshold slider or resetting keyword filters to view more candidates.'}

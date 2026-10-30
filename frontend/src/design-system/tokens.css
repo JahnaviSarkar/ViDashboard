@@ -1,47 +1,74 @@
 /* ==========================================================================
-   ViDashboard Design System Tokens - Pastel A-Toys Theme
+   ViDashboard Design System Tokens - Warm Golden Frosted-Glass Aesthetic
    ========================================================================== */
 
 :root {
-  /* Pastel A-Toys Brand Tokens */
+  /* Brand Accent Tokens */
   --raspberry-rose: #F2619C;
   --soft-lilac: #E7BEF8;
   --blueberry-milk: #93ABD9;
   --lemon-cream: #EDE986;
+  --amber-warm: #F59E0B;
+  --amber-glow: #FBBF24;
 
-  /* Surfaces & Layout */
-  --bg-app: #FAF8F7;
-  --bg-surface: #FFFFFF;
-  --bg-subtle: #F5F2F7;
-  --border-color: #E9E3ED;
+  /* Surfaces & Ambient Frosted Glass */
+  --bg-app: transparent;
+  --bg-viewport: rgba(18, 10, 5, 0.65);
+  --bg-surface: rgba(255, 255, 255, 0.06);
+  --bg-subtle: rgba(255, 255, 255, 0.04);
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-card-hover: rgba(255, 255, 255, 0.09);
+  --bg-input: rgba(255, 255, 255, 0.08);
+  --bg-overlay: rgba(10, 5, 2, 0.75);
+  --bg-modal: rgba(24, 14, 7, 0.92);
+
+  /* Frosted Borders */
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.10);
+  --border-glass: rgba(254, 243, 199, 0.20);
+  --border-amber-glow: rgba(251, 191, 36, 0.35);
   --border-focus: #F2619C;
 
   /* Typography */
-  --text-main: #292633;
-  --text-muted: #77717F;
-  --text-inverse: #FFFFFF;
+  --text-main: #FFFFFF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #E2E8F0;
+  --text-muted: rgba(254, 243, 199, 0.65);
+  --text-inverse: #1E1107;
 
   /* Status Colors */
-  --status-success: #10B981;
-  --status-success-bg: #D1FAE5;
-  --status-warning: #F59E0B;
-  --status-warning-bg: #FEF3C7;
-  --status-error: #EF4444;
-  --status-error-bg: #FEE2E2;
+  --status-success: #34D399;
+  --status-success-bg: rgba(52, 211, 153, 0.15);
+  --status-warning: #FBBF24;
+  --status-warning-bg: rgba(251, 191, 36, 0.15);
+  --status-error: #F87171;
+  --status-error-bg: rgba(248, 113, 113, 0.15);
+
+  --success: #34D399;
+  --success-subtle: rgba(52, 211, 153, 0.18);
+  --danger: #F87171;
+  --danger-subtle: rgba(248, 113, 113, 0.18);
+  --primary: #F2619C;
+  --primary-subtle: rgba(242, 97, 156, 0.18);
 
   /* Platform Tints */
-  --ig-tint: #E7BEF8;
-  --meta-tint: #93ABD9;
-  --tiktok-tint: #EDE986;
+  --ig-tint: rgba(231, 190, 248, 0.18);
+  --meta-tint: rgba(147, 171, 217, 0.18);
+  --tiktok-tint: rgba(237, 233, 134, 0.18);
 
   /* Shadows & Radii */
-  --shadow-soft: 0 4px 20px rgba(147, 171, 217, 0.15);
-  --shadow-card: 0 2px 12px rgba(147, 171, 217, 0.10);
-  --shadow-hover: 0 8px 28px rgba(147, 171, 217, 0.22);
+  --shadow-floating: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-hover: 0 12px 36px rgba(0, 0, 0, 0.35);
   --radius-pill: 9999px;
+  --radius-full: 9999px;
   --radius-card: 20px;
   --radius-inner: 14px;
   --radius-sm: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-3xl: 32px;
 
   /* Typography */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -54,13 +81,62 @@
   padding: 0;
 }
 
-body {
+html, body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   font-family: var(--font-sans);
-  background-color: var(--bg-app);
+  background: radial-gradient(circle at 50% 30%, #a46d38 0%, #4a2c11 50%, #1e1107 100%) fixed;
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ambient glow orbs */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(120px);
+}
+
+.ambient-glow-1 {
+  width: 500px;
+  height: 500px;
+  top: -100px;
+  left: 20%;
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.ambient-glow-2 {
+  width: 650px;
+  height: 650px;
+  top: 30%;
+  right: 5%;
+  background: rgba(164, 109, 56, 0.28);
+}
+
+.ambient-glow-3 {
+  width: 480px;
+  height: 480px;
+  bottom: -60px;
+  left: 25%;
+  background: rgba(231, 190, 248, 0.12);
+}
+
+/* Card glassmorphism & hover styles */
+.card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hoverable:hover {
+  border-color: var(--border-amber-glow) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Animations */
@@ -96,12 +172,12 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-app);
+  background: rgba(0, 0, 0, 0.2);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-pill);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--blueberry-milk);
+  background: rgba(251, 191, 36, 0.4);
 }

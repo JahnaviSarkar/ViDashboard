@@ -148,11 +148,11 @@ export const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({
           {/* Author & Stats */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={16} color="var(--text-muted)" />
-              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{video.author || 'Creator'}</span>
+              <User size={16} color="rgba(254, 243, 199, 0.70)" />
+              <span style={{ fontWeight: 700, color: '#FFFFFF' }}>{video.author || 'Creator'}</span>
             </div>
             {video.postedAt && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.70)' }}>
                 <Calendar size={14} />
                 <span>{new Date(video.postedAt).toLocaleDateString()}</span>
               </div>
@@ -163,35 +163,36 @@ export const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({
           <div
             style={{
               padding: '12px',
-              backgroundColor: 'var(--bg-subtle)',
+              backgroundColor: 'rgba(20, 11, 5, 0.70)',
               borderRadius: 'var(--radius-md)',
-              borderLeft: '4px solid var(--primary)',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
+              borderLeft: '4px solid #F2619C',
             }}
           >
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#F2619C', marginBottom: '4px' }}>
               Visual Grounding Explanation
             </div>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '0.875rem', color: '#FFFFFF', lineHeight: 1.5, margin: 0 }}>
               {explanation}
             </p>
           </div>
 
           {/* Caption */}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>
-              Full Caption & Copy
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(254, 243, 199, 0.70)', marginBottom: '6px' }}>
+              Full Caption &amp; Copy
             </div>
             <div
               style={{
                 fontSize: '0.875rem',
-                color: 'var(--text-secondary)',
+                color: 'rgba(255, 255, 255, 0.90)',
                 lineHeight: 1.6,
                 maxHeight: '140px',
                 overflowY: 'auto',
                 padding: '8px 12px',
-                backgroundColor: 'var(--bg-app)',
+                backgroundColor: 'rgba(20, 11, 5, 0.70)',
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
+                border: '1px solid rgba(255, 255, 255, 0.10)',
               }}
             >
               {video.caption || 'No caption text.'}

@@ -59,11 +59,11 @@ export const ShortlistView: React.FC<ShortlistViewProps> = ({
               <Badge variant="raspberry" icon={<Bookmark size={12} />}>
                 Saved Shortlist
               </Badge>
-              <span style={{ fontSize: '0.8125rem', color: '#77717F' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.70)' }}>
                 {shortlist.length} videos saved
               </span>
             </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#292633', marginTop: '2px' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
               Curated Video Shortlist
             </h1>
           </div>
@@ -89,20 +89,22 @@ export const ShortlistView: React.FC<ShortlistViewProps> = ({
               width: '56px',
               height: '56px',
               borderRadius: '50%',
-              backgroundColor: '#FDE8F1',
+              backgroundColor: 'rgba(242, 97, 156, 0.18)',
+              border: '1px solid rgba(242, 97, 156, 0.35)',
               color: '#F2619C',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px',
+              boxShadow: '0 4px 16px rgba(242, 97, 156, 0.25)',
             }}
           >
             <Bookmark size={28} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#292633', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>
             Your Shortlist is Empty
           </h3>
-          <p style={{ color: '#77717F', fontSize: '0.875rem', maxWidth: '420px', margin: '0 auto 20px' }}>
+          <p style={{ color: 'rgba(254, 243, 199, 0.70)', fontSize: '0.875rem', maxWidth: '420px', margin: '0 auto 20px' }}>
             Click the bookmark icon on any candidate video card in the discovery results to save it here for review and CSV/JSON export.
           </p>
           <Button size="md" variant="raspberry" onClick={onBackToSearch}>

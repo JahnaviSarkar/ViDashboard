@@ -104,7 +104,7 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
 
   return (
     <div style={{ maxWidth: '680px', margin: '40px auto', width: '100%' }}>
-      <Card padding="lg" style={{ border: '1.5px solid #FCA5A5', boxShadow: '0 8px 30px rgba(239, 68, 68, 0.12)' }}>
+      <Card padding="lg" style={{ border: '1.5px solid rgba(248, 113, 113, 0.40)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.40)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -113,8 +113,9 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
                 width: '44px',
                 height: '44px',
                 borderRadius: '50%',
-                backgroundColor: '#FEE2E2',
-                color: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.20)',
+                border: '1px solid rgba(239, 68, 68, 0.40)',
+                color: '#F87171',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -130,7 +131,7 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
                   {details.badgeText}
                 </Badge>
               </div>
-              <h2 style={{ fontSize: '1.375rem', fontWeight: 800, color: '#292633', margin: 0 }}>
+              <h2 style={{ fontSize: '1.375rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                 {details.title}
               </h2>
             </div>
@@ -140,25 +141,25 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
           <div
             style={{
               padding: '12px 16px',
-              backgroundColor: '#FAF8F7',
+              backgroundColor: 'rgba(20, 11, 5, 0.70)',
               borderRadius: '12px',
-              border: '1px solid #E9E3ED',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
               fontSize: '0.875rem',
-              color: '#292633',
+              color: '#FFFFFF',
               lineHeight: 1.5,
             }}
           >
-            <strong>What went wrong:</strong> {details.description}
+            <strong style={{ color: '#F87171' }}>What went wrong:</strong> {details.description}
           </div>
 
           {/* Actionable Suggestions */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', fontWeight: 700, color: '#77717F', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', fontWeight: 700, color: 'rgba(254, 243, 199, 0.75)', marginBottom: '8px' }}>
               <HelpCircle size={14} color="#93ABD9" />
               <span>What to try next:</span>
             </div>
 
-            <ul style={{ margin: 0, paddingLeft: '22px', fontSize: '0.8125rem', color: '#77717F', lineHeight: 1.6 }}>
+            <ul style={{ margin: 0, paddingLeft: '22px', fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.70)', lineHeight: 1.6 }}>
               {details.nextSteps.map((step, idx) => (
                 <li key={idx}>{step}</li>
               ))}
@@ -166,7 +167,7 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '12px', paddingTop: '12px', borderTop: '1px solid #E9E3ED' }}>
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.10)' }}>
             <Button
               variant="secondary"
               size="md"

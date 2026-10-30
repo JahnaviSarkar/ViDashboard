@@ -186,346 +186,385 @@ export default function App() {
       style={{
         display: 'flex',
         minHeight: '100vh',
-        backgroundColor: '#FAF8F7',
-        color: '#292633',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px 20px',
+        boxSizing: 'border-box',
+        position: 'relative',
         fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
-      {/* 1. Slim Left Rail */}
-      <LeftRail
-        currentTab={currentTab}
-        onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          if (tab === 'home' && currentView === 'error') {
-            setCurrentView('search');
-          }
+      {/* Ambient background glow orbs */}
+      <div className="ambient-glow ambient-glow-1" />
+      <div className="ambient-glow ambient-glow-2" />
+      <div className="ambient-glow ambient-glow-3" />
+
+      {/* Centered Floating Glass Shell Container */}
+      <div
+        id="app-floating-viewport"
+        style={{
+          width: '100%',
+          maxWidth: '1400px',
+          minHeight: 'calc(100vh - 64px)',
+          borderRadius: '32px',
+          border: '1px solid rgba(254, 243, 199, 0.20)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          backgroundColor: 'rgba(18, 10, 5, 0.70)',
+          display: 'flex',
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 1,
         }}
-        isHistoryOpen={isHistoryOpen}
-        onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
-        shortlistCount={shortlist.length}
-      />
-
-      {/* 2. Persistent, Collapsible Search History Panel */}
-      <SearchHistoryPanel
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        history={history}
-        activeSearchId={activeSearchId}
-        onSelectSearch={handleSelectHistoricalSearch}
-      />
-
-      {/* 3. Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Top Header with App Brand and Search Input */}
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 30,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid #E9E3ED',
-            padding: '16px 28px',
+      >
+        {/* 1. Slim Left Rail */}
+        <LeftRail
+          currentTab={currentTab}
+          onSelectTab={(tab) => {
+            setCurrentTab(tab);
+            if (tab === 'home' && currentView === 'error') {
+              setCurrentView('search');
+            }
           }}
-        >
-          <div
+          isHistoryOpen={isHistoryOpen}
+          onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
+          shortlistCount={shortlist.length}
+        />
+
+        {/* 2. Persistent, Collapsible Search History Panel */}
+        <SearchHistoryPanel
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          history={history}
+          activeSearchId={activeSearchId}
+          onSelectSearch={handleSelectHistoricalSearch}
+        />
+
+        {/* 3. Main Content Area */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
+          {/* Top Header with App Brand and Search Input */}
+          <header
             style={{
-              maxWidth: '1280px',
-              margin: '0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
+              position: 'sticky',
+              top: 0,
+              zIndex: 30,
+              backgroundColor: 'rgba(18, 10, 5, 0.45)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+              padding: '16px 28px',
             }}
           >
-            {/* Top row: Brand & Search bar */}
             <div
               style={{
+                maxWidth: '1280px',
+                margin: '0 auto',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '24px',
-                flexWrap: 'wrap',
+                flexDirection: 'column',
+                gap: '16px',
               }}
             >
+              {/* Top row: Brand & Search bar */}
               <div
-                onClick={() => {
-                  setCurrentTab('home');
-                  setCurrentView('search');
-                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  userSelect: 'none',
+                  justifyContent: 'space-between',
+                  gap: '24px',
+                  flexWrap: 'wrap',
                 }}
               >
                 <div
-                  style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '12px',
-                    backgroundColor: '#FDE8F1',
-                    border: '1px solid #F9A8CE',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#F2619C',
-                    boxShadow: '0 2px 8px rgba(242, 97, 156, 0.2)',
+                  onClick={() => {
+                    setCurrentTab('home');
+                    setCurrentView('search');
                   }}
-                >
-                  <Sparkles size={20} />
-                </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: '1.25rem',
-                      fontWeight: 800,
-                      color: '#292633',
-                      letterSpacing: '-0.02em',
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    ViDashboard
-                  </div>
-                  <div style={{ fontSize: '0.6875rem', color: '#77717F', fontWeight: 600 }}>
-                    Visual Video Discovery &amp; Verification
-                  </div>
-                </div>
-              </div>
-
-              {/* Large rounded search bar with image upload beside it & raspberry button */}
-              <div style={{ flex: 1, maxWidth: '820px' }}>
-                <TopSearchBar onSearch={handleSearch} isLoading={isLoadingSearch} />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* View Routing */}
-        <main style={{ flex: 1, padding: '28px', maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
-          {isLoadingDetails ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 20px', gap: '16px' }}>
-              <Loader2 size={36} color="#F2619C" className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-              <span style={{ color: '#77717F', fontSize: '0.9375rem', fontWeight: 600 }}>Loading verified video intelligence...</span>
-            </div>
-          ) : currentTab === 'shortlist' ? (
-            <ShortlistView
-              shortlist={shortlist}
-              onToggleShortlist={handleToggleShortlist}
-              onOpenPreview={(res) => setPreviewResult(res)}
-              onBackToSearch={() => {
-                setCurrentTab('home');
-                if (searchDetails) setCurrentView('results');
-                else setCurrentView('search');
-              }}
-            />
-          ) : (
-            <>
-              {currentView === 'search' && (
-                <div
                   style={{
-                    maxWidth: '840px',
-                    margin: '60px auto',
-                    textAlign: 'center',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '28px',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
                   }}
                 >
                   <div
                     style={{
-                      width: '72px',
-                      height: '72px',
-                      borderRadius: '24px',
-                      backgroundColor: '#FDE8F1',
-                      border: '1px solid #F9A8CE',
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(242, 97, 156, 0.18)',
+                      border: '1px solid rgba(242, 97, 156, 0.38)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: '#F2619C',
-                      boxShadow: '0 4px 16px rgba(242, 97, 156, 0.25)',
+                      boxShadow: '0 2px 12px rgba(242, 97, 156, 0.3)',
                     }}
                   >
-                    <Film size={36} />
+                    <Sparkles size={20} />
                   </div>
-
                   <div>
-                    <h1
+                    <div
                       style={{
-                        fontSize: '2.25rem',
+                        fontSize: '1.25rem',
                         fontWeight: 800,
-                        color: '#292633',
-                        letterSpacing: '-0.025em',
-                        marginBottom: '10px',
+                        color: '#FFFFFF',
+                        letterSpacing: '-0.02em',
+                        lineHeight: 1.1,
                       }}
                     >
-                      Multimodal Product Video Discovery
-                    </h1>
-                    <p
-                      style={{
-                        fontSize: '1rem',
-                        color: '#77717F',
-                        maxWidth: '580px',
-                        lineHeight: 1.6,
-                        margin: '0 auto',
-                      }}
-                    >
-                      Paste a verified product URL or upload an image above to extract visual attributes,
-                      synthesize search queries, and verify matching Instagram Reels and Meta Ad Library videos.
-                    </p>
-                  </div>
-
-                  {/* Feature Highlights in A-Toys pastel cards */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                      gap: '16px',
-                      width: '100%',
-                      marginTop: '12px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E9E3ED',
-                        borderRadius: '16px',
-                        padding: '20px',
-                        textAlign: 'left',
-                        boxShadow: '0 2px 10px rgba(147, 171, 217, 0.08)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          backgroundColor: '#F8EEFC',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#6B2B85',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <Zap size={18} />
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px' }}>
-                        Image Brain VLM
-                      </div>
-                      <div style={{ fontSize: '0.8125rem', color: '#77717F', lineHeight: 1.5 }}>
-                        Multimodal Gemini visual attribute extraction and hashtag concept synthesis.
-                      </div>
+                      ViDashboard
                     </div>
-
-                    <div
-                      style={{
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E9E3ED',
-                        borderRadius: '16px',
-                        padding: '20px',
-                        textAlign: 'left',
-                        boxShadow: '0 2px 10px rgba(147, 171, 217, 0.08)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          backgroundColor: '#EBF1F9',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#314F85',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <Compass size={18} />
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px' }}>
-                        Cross-Platform Scrapers
-                      </div>
-                      <div style={{ fontSize: '0.8125rem', color: '#77717F', lineHeight: 1.5 }}>
-                        Targeted Instagram Reels hashtag search &amp; Meta Ad Library video campaigns.
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E9E3ED',
-                        borderRadius: '16px',
-                        padding: '20px',
-                        textAlign: 'left',
-                        boxShadow: '0 2px 10px rgba(147, 171, 217, 0.08)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          backgroundColor: '#FBFAD7',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#6E6A15',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <ShieldCheck size={18} />
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px' }}>
-                        Hybrid Scoring &amp; Dedup
-                      </div>
-                      <div style={{ fontSize: '0.8125rem', color: '#77717F', lineHeight: 1.5 }}>
-                        Frame extraction, visual evidence grounding, and perceptual dHash deduplication.
-                      </div>
+                    <div style={{ fontSize: '0.6875rem', color: 'rgba(254, 243, 199, 0.65)', fontWeight: 600 }}>
+                      Visual Video Discovery &amp; Verification
                     </div>
                   </div>
                 </div>
-              )}
 
-              {currentView === 'progress' && activeSearchId && (
-                <PipelineProgressView
-                  searchId={activeSearchId}
-                  onCompleted={handlePipelineCompleted}
-                  onCancel={() => setCurrentView('search')}
-                />
-              )}
+                {/* Large rounded search bar with image upload beside it & raspberry button */}
+                <div style={{ flex: 1, maxWidth: '820px' }}>
+                  <TopSearchBar onSearch={handleSearch} isLoading={isLoadingSearch} />
+                </div>
+              </div>
+            </div>
+          </header>
 
-              {currentView === 'results' && searchDetails && (
-                <ResultsDashboardView
-                  searchDetails={searchDetails}
-                  onNewSearch={() => setCurrentView('search')}
-                  shortlist={shortlist}
-                  onToggleShortlist={handleToggleShortlist}
-                  onRetryShortfall={() => {
-                    if (activeSearchId) handleSearch({ text: searchDetails.search.productUrl || searchDetails.search.queryText || '' });
-                  }}
-                />
-              )}
+          {/* View Routing */}
+          <main style={{ flex: 1, padding: '28px', maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+            {isLoadingDetails ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 20px', gap: '16px' }}>
+                <Loader2 size={36} color="#F2619C" className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ color: 'rgba(254, 243, 199, 0.70)', fontSize: '0.9375rem', fontWeight: 600 }}>Loading verified video intelligence...</span>
+              </div>
+            ) : currentTab === 'shortlist' ? (
+              <ShortlistView
+                shortlist={shortlist}
+                onToggleShortlist={handleToggleShortlist}
+                onOpenPreview={(res) => setPreviewResult(res)}
+                onBackToSearch={() => {
+                  setCurrentTab('home');
+                  if (searchDetails) setCurrentView('results');
+                  else setCurrentView('search');
+                }}
+              />
+            ) : (
+              <>
+                {currentView === 'search' && (
+                  <div
+                    style={{
+                      maxWidth: '840px',
+                      margin: '60px auto',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '28px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '24px',
+                        backgroundColor: 'rgba(242, 97, 156, 0.16)',
+                        border: '1px solid rgba(242, 97, 156, 0.38)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#F2619C',
+                        boxShadow: '0 4px 20px rgba(242, 97, 156, 0.3)',
+                      }}
+                    >
+                      <Film size={36} />
+                    </div>
 
-              {currentView === 'error' && (
-                <ErrorStateView
-                  errorType={errorState?.errorType || 'GENERIC_ERROR'}
-                  message={errorState?.message}
-                  onRetry={() => {
-                    if (activeSearchId) {
-                      setCurrentView('progress');
-                    } else {
-                      setCurrentView('search');
-                    }
-                  }}
-                  onBack={() => setCurrentView('search')}
-                />
-              )}
-            </>
-          )}
-        </main>
+                    <div>
+                      <h1
+                        style={{
+                          fontSize: '2.25rem',
+                          fontWeight: 800,
+                          color: '#FFFFFF',
+                          letterSpacing: '-0.025em',
+                          marginBottom: '10px',
+                        }}
+                      >
+                        Multimodal Product Video Discovery
+                      </h1>
+                      <p
+                        style={{
+                          fontSize: '1rem',
+                          color: 'rgba(254, 243, 199, 0.75)',
+                          maxWidth: '580px',
+                          lineHeight: 1.6,
+                          margin: '0 auto',
+                        }}
+                      >
+                        Paste a verified product URL or upload an image above to extract visual attributes,
+                        synthesize search queries, and verify matching Instagram Reels and Meta Ad Library videos.
+                      </p>
+                    </div>
+
+                    {/* Feature Highlights in A-Toys pastel cards with dark glass styling */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        gap: '16px',
+                        width: '100%',
+                        marginTop: '12px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          border: '1px solid rgba(255, 255, 255, 0.10)',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          textAlign: 'left',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(231, 190, 248, 0.16)',
+                            border: '1px solid rgba(231, 190, 248, 0.30)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#E7BEF8',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          <Zap size={18} />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px', color: '#FFFFFF' }}>
+                          Image Brain VLM
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.65)', lineHeight: 1.5 }}>
+                          Multimodal Gemini visual attribute extraction and hashtag concept synthesis.
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          border: '1px solid rgba(255, 255, 255, 0.10)',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          textAlign: 'left',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(147, 171, 217, 0.16)',
+                            border: '1px solid rgba(147, 171, 217, 0.30)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#93ABD9',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          <Compass size={18} />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px', color: '#FFFFFF' }}>
+                          Cross-Platform Scrapers
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.65)', lineHeight: 1.5 }}>
+                          Targeted Instagram Reels hashtag search &amp; Meta Ad Library video campaigns.
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          border: '1px solid rgba(255, 255, 255, 0.10)',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          textAlign: 'left',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(237, 233, 134, 0.16)',
+                            border: '1px solid rgba(237, 233, 134, 0.30)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#EDE986',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          <ShieldCheck size={18} />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '4px', color: '#FFFFFF' }}>
+                          Hybrid Scoring &amp; Dedup
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: 'rgba(254, 243, 199, 0.65)', lineHeight: 1.5 }}>
+                          Frame extraction, visual evidence grounding, and perceptual dHash deduplication.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentView === 'progress' && activeSearchId && (
+                  <PipelineProgressView
+                    searchId={activeSearchId}
+                    onCompleted={handlePipelineCompleted}
+                    onCancel={() => setCurrentView('search')}
+                  />
+                )}
+
+                {currentView === 'results' && searchDetails && (
+                  <ResultsDashboardView
+                    searchDetails={searchDetails}
+                    onNewSearch={() => setCurrentView('search')}
+                    shortlist={shortlist}
+                    onToggleShortlist={handleToggleShortlist}
+                    onRetryShortfall={() => {
+                      if (activeSearchId) handleSearch({ text: searchDetails.search.productUrl || searchDetails.search.queryText || '' });
+                    }}
+                  />
+                )}
+
+                {currentView === 'error' && (
+                  <ErrorStateView
+                    errorType={errorState?.errorType || 'GENERIC_ERROR'}
+                    message={errorState?.message}
+                    onRetry={() => {
+                      if (activeSearchId) {
+                        setCurrentView('progress');
+                      } else {
+                        setCurrentView('search');
+                      }
+                    }}
+                    onBack={() => setCurrentView('search')}
+                  />
+                )}
+              </>
+            )}
+          </main>
+        </div>
       </div>
 
       {/* Video Preview Modal when clicked from Shortlist */}
