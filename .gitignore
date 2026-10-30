@@ -10,10 +10,8 @@ coverage/
 
 # Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -28,9 +26,13 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Database / uploads / temp
+# Database, data, uploads, scratch, temp and references
 data/
 uploads/
+scratch/
+temp/
+tmp/
+*.tmp
 postgres_data/
 embedded-postgres-data/
-scratch/
+reference/

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "ViDashboard - Product Video Discovery Dashboard",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "workspaces": [
     "backend",
     "frontend"
