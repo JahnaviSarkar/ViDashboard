@@ -99,3 +99,4 @@ export class TikTokCollector implements Collector {
     };
   }
 }
+

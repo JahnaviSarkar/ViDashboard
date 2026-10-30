@@ -26,9 +26,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Database, data, uploads, scratch, temp and references
+# Database, data, uploads, storage, scratch, temp and references
 data/
 uploads/
+storage/
+backend/storage/
 scratch/
 temp/
 tmp/

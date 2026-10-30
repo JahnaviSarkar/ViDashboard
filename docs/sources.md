@@ -2,112 +2,117 @@
 
 ## 1. Overview & Strategy
 
-ViDashboard discovers, aggregates, and analyzes short-form video content related to a specific product or concept across major social platforms:
-1. **Instagram Reels** (Meta Graph API hashtag search and media endpoints)
-2. **Meta Ad Library** (Meta Graph API `ads_archive` endpoint for active & historic video ad creatives)
-3. **TikTok** (Optional / Fallback video discovery)
+ViDashboard discovers, aggregates, and analyzes short-form video content related to a specific product or concept across major social and advertising platforms:
+1. **Instagram Reels** (Official Meta Graph API or Apify Instagram Reels Scraper)
+2. **Meta Ad Library** (Official Meta Graph API `ads_archive` or Apify Facebook Ads Library Scraper)
+3. **TikTok** (Optional supplementary discovery via official API or proxy)
 
 ### Collection Objectives
-- **Target Yield**: A minimum of **20 raw candidate videos** per primary source per search run.
+- **Target Yield**: Target of **20 raw candidate videos** per primary source per search run.
+- **Provider Fallback Order**:
+  1. **Official Graph API**: Used if `INSTAGRAM_ACCESS_TOKEN` / `META_ACCESS_TOKEN` is present in the environment.
+  2. **Apify Provider Layer**: Transparent fallback used if `APIFY_TOKEN` is present.
+  3. **Explicit Shortfall Accounting**: If neither token is present or quotas/platforms yield fewer than 20 videos, the system logs the exact shortfall and error without fabricating synthetic data.
+  4. **Mock Provider**: Exclusively used when `MODE=mock` (all candidate records labeled with `isMock: true`).
 - **Parallel Isolation**: All collectors run concurrently via `Promise.allSettled` to prevent slow or failing external APIs from halting the pipeline.
 - **Shortfall Accounting**: Every run explicitly tracks `requested`, `collected`, `usable`, `shortfall`, and `error` in the `source_runs` table.
-- **Honest Mode Separation**: In `MODE=live`, missing tokens, rate limits, or platform restrictions are reported truthfully. Mock data is restricted exclusively to `MODE=mock` and always labeled with `isMock: true`.
 
 ---
 
-## 2. Source 1: Instagram Reels
+## 2. Data Provider Layer (Apify)
 
-### 2.1 API Endpoints & Architecture
-ViDashboard leverages the official Meta Graph API Instagram Graph endpoints:
-1. **Hashtag Discovery**:
-   - `GET https://graph.facebook.com/v19.0/ig_hashtag_search?user_id={instagram_account_id}&q={hashtag_name}`
-   - Returns the unique `id` for the target hashtag.
-2. **Hashtag Media Retrieval**:
-   - `GET https://graph.facebook.com/v19.0/{hashtag_id}/recent_media?user_id={instagram_account_id}&fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,like_count,comments_count`
-   - Secondary: `GET https://graph.facebook.com/v19.0/{hashtag_id}/top_media` for high-engagement anchor videos.
-3. **Filtering for Reels / Videos**:
-   - Filter `media_type === 'VIDEO'` to isolate Reels from static carousel/photo posts.
-   - Extract video streams (`media_url`) and cover frames (`thumbnail_url`).
+Due to Meta Graph API platform barriers (commercial ads in the Meta Ad Library Graph API are restricted to political/issue ads in regions like India and return no direct video files; Instagram hashtag endpoints require Business account linking and have a 30-hashtag 7-day rolling quota), ViDashboard integrates a managed Apify provider layer behind the unified `Collector` interface.
 
-### 2.2 Authentication & Credentials
-- **Required Token**: Long-lived User Access Token or Page Access Token with permissions:
-  - `instagram_basic`
-  - `pages_show_list`
-  - `pages_read_engagement`
-- **Environment Variable**: `INSTAGRAM_ACCESS_TOKEN`
+### 2.1 Instagram Reels Actor Choice & Justification
 
-### 2.3 Rate Limits & Platform Constraints
-- **Hashtag Search Quota**: Maximum of 30 unique hashtags queried per Instagram Business Account within any 7-day rolling window.
-- **User Request Rate**: 200 calls per user per hour standard Graph API rate limit.
-- **Freshness Window**: `recent_media` only surfaces posts published within the prior 24 hours.
+| Metric / Attribute | Specification |
+| :--- | :--- |
+| **Actor ID** | `apify/instagram-hashtag-scraper` (Configurable via `APIFY_INSTAGRAM_ACTOR`) |
+| **Cost** | ~$2.30 to $2.60 per 1,000 results ($0.0023–$0.0026 per item) |
+| **Speed** | ~4 to 7 seconds per 25-item run |
+| **Mode** | `resultsType: 'reels'` |
+| **Fields Returned** | `id`, `shortCode`, `type` (`"Video"`), `productType` (`"clips"`), `url`, `displayUrl` (thumbnail), `videoUrl` (.mp4 stream), `caption`, `hashtags`, `ownerUsername`, `ownerFullName`, `timestamp`, `videoDuration`, `videoPlayCount` |
+| **Justification** | Official, maintained Apify scraper. By selecting `resultsType: 'reels'`, the actor directly queries Instagram Reels rather than feed images or carousels, ensuring 100% of returned items are true video candidates. |
 
-### 2.4 Shortfall Handling & Expansion Strategy
-When the primary Tier 1 hashtag produces fewer than 20 videos:
-1. **Tier 1 Expansion**: Query secondary product hashtags (e.g. `#lipgloss`, `#fentyglow`).
-2. **Tier 2 Expansion**: Broaden to category and style concept hashtags (e.g. `#lipglossaddict`, `#makeuphaves`).
-3. **Fallback Accounting**: If the quota is exhausted or fewer than 20 videos exist, the collector persists all usable records and logs the remaining shortfall in `source_runs`.
+### 2.2 Meta Ad Library Actor Choice & Justification
+
+| Metric / Attribute | Specification |
+| :--- | :--- |
+| **Actor ID** | `curious_coder/facebook-ads-library-scraper` (Configurable via `APIFY_META_ADS_ACTOR`) |
+| **Cost** | ~$0.75 per 1,000 ads ($0.00075 per item; minimum 10 items / run) |
+| **Speed** | ~6 to 12 seconds per 25-ad batch |
+| **Fields Returned** | `ad_archive_id` / `id`, `page_name`, `snapshot.body.text` (ad copy), `snapshot.cards[].video_hd_url`, `snapshot.cards[].video_sd_url`, `snapshot.cards[].video_preview_image_url`, `ad_library_url`, `start_date`, `publisher_platforms` |
+| **Justification** | Fully scrapes active commercial video ad campaigns worldwide without requiring verified political advertiser credentials or Graph API app review. Extracts HD MP4 video streams and high-resolution cover preview frames from ad snapshot cards. |
 
 ---
 
-## 3. Source 2: Meta Ad Library
+## 3. Cost Safety, Caching & Reliability Architecture
 
-### 3.1 API Endpoints & Architecture
-Meta provides access to commercial advertising creatives via the `ads_archive` Graph API:
-- **Endpoint**:
-  `GET https://graph.facebook.com/v19.0/ads_archive`
-- **Key Parameters**:
-  - `access_token`: App or User Access Token.
-  - `ad_reached_countries`: `['US', 'IN', 'GB', 'CA', 'AU']` (ISO 3166-1 alpha-2 array).
-  - `ad_type`: `ALL` (or `POLITICAL_AND_ISSUE_ADS` where restricted).
-  - `search_terms`: Commercial keyword strings from the Query Generator (e.g. `Fenty Gloss Bomb`, `Wireless Headphones sale`).
-  - `ad_active_status`: `ALL` (to discover active campaigns and historic high-performing creatives).
-  - `fields`: `id,ad_creation_time,ad_creative_bodies,ad_creative_link_captions,ad_creative_link_titles,ad_delivery_start_time,ad_snapshot_url,page_id,page_name,publisher_platforms,languages`.
+```
+[Query Generator]
+       │
+       ▼
+[Collector Service] ───► Check 24-Hour DB Cache (Key: apify:{source}:{term})
+       │                                  │
+       │ Cache Miss                       │ Cache Hit
+       ▼                                  ▼
+[Cap Checks] (runsCount < APIFY_MAX_RUNS_PER_SEARCH)  Return Cached Candidates (0 cost)
+       │
+       ▼
+[Apify Client]
+  ├── Circuit Breaker (3 consecutive failures -> 30s OPEN state)
+  ├── Retry with Backoff (HTTP 429 rate limit / 503)
+  ├── Quota Protection (HTTP 402 -> APIFY_QUOTA_EXCEEDED)
+  └── Timeout Protection (60s actor run ceiling)
+       │
+       ▼
+[Normalisation & Asset Ingestion]
+  ├── Video Filter (Keep video items only; reject static images)
+  ├── Usable ID & Thumbnail Verification
+  └── Download Thumbnail -> /storage/thumbnails/{platform}_{id}.jpg
+       │
+       ▼
+[Database Persistence] ───► source_runs (requested, collected, usable, shortfall)
+```
 
-### 3.2 Authentication & Credentials
-- **Required Token**: Meta Developer App Access Token or User Token with Ad Library API permissions.
-- **Environment Variable**: `META_ACCESS_TOKEN`
+### 3.1 Cost Safety Caps
+To prevent runaway actor execution or billing overruns:
+- `APIFY_MAX_ITEMS_PER_RUN` (Default: `40`): Caps items scraped per actor run.
+- `APIFY_MAX_RUNS_PER_SEARCH` (Default: `3`): Maximum query iterations per search. When reaching 3 runs, the collector stops and truthfully returns the collected count and shortfall.
 
-### 3.3 Rate Limits & Platform Constraints
-- **API Call Rate**: Standard limit of 200 calls per hour per app.
-- **Snapshot URL Lifecycle**: Meta Ad Library provides `ad_snapshot_url` representing the hosted iframe. Video assets must be extracted from the snapshot DOM or creative bodies.
+### 3.2 24-Hour PostgreSQL Query Cache
+All collector responses are cached in the PostgreSQL `cache` table:
+- **Key Pattern**: `apify:instagram:{hashtag}` and `apify:meta:{search_term}`
+- **TTL**: 86,400 seconds (24 hours).
+- Subsequent discovery runs for identical or overlapping concepts are served instantly from cache at \$0 cost.
 
-### 3.4 Shortfall Handling & Expansion Strategy
-When exact brand/product terms produce fewer than 20 ads:
-1. Expand from exact product terms (`Brand + Product`) to commercial intent terms (`Product + sale`, `Product + discount`).
-2. Expand across multiple country markets (`US`, `IN`, `GB`).
-3. If fewer than 20 ads exist for niche products, the collector completes with accurate accounting (`usable < 20`, `shortfall = 20 - usable`).
+### 3.3 Thumbnail Asset Persistence
+Instagram and Meta CDN thumbnail URLs contain time-limited authentication tokens (`?oh=...&oe=...`) that expire within hours or days.
+- During collection, `downloadAndSaveThumbnail` retrieves the remote image, validates content length and dimensions (max 800px), and stores it permanently in `storage/thumbnails/{platform}_{id}.jpg`.
+- Images are served to the frontend dashboard via Fastify route `/storage/thumbnails/:filename`.
+- Local storage directories (`storage/`, `backend/storage/`) are strictly gitignored.
 
 ---
 
-## 4. Source 3: TikTok (Optional / Fallback)
+## 4. Collector Data Contracts
 
-### 4.1 Overview
-- TikTok discovery provides supplementary cultural video context.
-- Available via TikTok Research API (enterprise) or public discovery proxies (e.g. Apify TikTok Actor).
-- Configured via `TIKTOK_ACCESS_TOKEN` or `APIFY_API_TOKEN`.
-- Marked as optional: failure or lack of credentials does not block the search pipeline.
-
----
-
-## 5. Collector Data Contract
-
-### 5.1 Common Video Candidate Structure
+### 4.1 RawVideoCandidate Contract
 ```typescript
 export interface RawVideoCandidate {
   platform: 'instagram' | 'meta' | 'tiktok';
   platformVideoId: string;
   canonicalUrl: string;
-  thumbnailUrl?: string;
-  mediaUrl?: string;
-  caption?: string;
-  author?: string;
-  postedAt?: Date;
+  thumbnailUrl?: string; // Local /storage/thumbnails/... or valid remote fallback
+  mediaUrl?: string;     // Direct .mp4 video stream URL
+  caption?: string;      // Post caption or ad copy
+  author?: string;       // @username or advertiser page name
+  postedAt?: Date;       // Publication timestamp
   raw?: Record<string, unknown>;
-  isMock: boolean;
+  isMock: boolean;       // false for real collected data; true only in MODE=mock
 }
 ```
 
-### 5.2 Collector Result Contract
+### 4.2 CollectorResult Contract
 ```typescript
 export interface CollectorResult {
   source: 'instagram' | 'meta' | 'tiktok';
@@ -122,40 +127,10 @@ export interface CollectorResult {
 
 ---
 
-## 6. Execution Lifecycle & Pipeline Integration
-
-```mermaid
-sequenceDiagram
-    participant Orchestrator as Pipeline Orchestrator
-    participant EventBus as SSE Event Bus
-    participant Instagram as Instagram Collector
-    participant Meta as Meta Ad Library Collector
-    participant DB as PostgreSQL (videos & source_runs)
-
-    Orchestrator->>EventBus: Emit stage: 'fetching_instagram' (running)
-    Orchestrator->>EventBus: Emit stage: 'fetching_meta' (running)
-    Orchestrator->>DB: Insert source_runs (status: pending, requested: 20)
-
-    par Parallel Collection
-        Orchestrator->>Instagram: collect(queries, { targetCount: 20 })
-        Instagram-->>Orchestrator: CollectorResult (candidates, shortfall)
-    and
-        Orchestrator->>Meta: collect(queries, { targetCount: 20 })
-        Meta-->>Orchestrator: CollectorResult (candidates, shortfall)
-    end
-
-    Orchestrator->>DB: Upsert videos (platform, platformVideoId)
-    Orchestrator->>DB: Update source_runs (collected, usable, shortfall, status)
-    Orchestrator->>EventBus: Emit stage: 'fetching_instagram' (done / failed)
-    Orchestrator->>EventBus: Emit stage: 'fetching_meta' (done / failed)
-```
-
----
-
-## 7. Shortfall Recovery Protocol
+## 5. Shortfall Recovery Protocol
 
 If any collector returns `collected < 20`:
 1. **Tier 1 (Exact)**: Check primary brand and exact product keywords.
 2. **Tier 2 (Attribute Broadened)**: Broaden to dominant colors, materials, and shapes.
 3. **Tier 3 (Category Discovery)**: Fall back to category-level high-traffic terms.
-4. **Final Accounting**: If all expansion tiers are exhausted without reaching 20 videos, the pipeline records the truthful shortfall rather than synthesizing fake data.
+4. **Cap Enforcement**: If all query tiers are checked or `APIFY_MAX_RUNS_PER_SEARCH` is reached, the pipeline persists the usable videos and records the truthful shortfall in `source_runs`.

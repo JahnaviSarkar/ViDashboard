@@ -41,6 +41,7 @@ export async function ensurePostgresRunning(preferredPort: number = 5432): Promi
       user: 'postgres',
       password: 'postgres',
       persistent: true,
+      initdbFlags: ['--encoding=UTF8', '--locale=C'],
       onLog: () => {},
       onError: () => {},
     });

@@ -109,7 +109,7 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
       queryText: 'Smart Espresso Maker',
       selectedSources: ['instagram'],
       minMatchThreshold: 60,
-      mode: 'live',
+      mode: 'mock',
     });
 
     await orchestrator.execute(search.id);
@@ -145,7 +145,7 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
       queryText: 'Artisan Ceramic Vase',
       selectedSources: ['instagram'],
       minMatchThreshold: 60,
-      mode: 'live',
+      mode: 'mock',
     });
 
     await orchestrator.execute(search1.id);
@@ -158,7 +158,7 @@ describe('Phase 2 Pipeline Orchestrator & Search APIs', () => {
       queryText: 'Artisan Ceramic Vase',
       selectedSources: ['instagram'],
       minMatchThreshold: 60,
-      mode: 'live',
+      mode: 'mock',
     });
 
     await orchestrator.execute(search2.id);

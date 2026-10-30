@@ -2,11 +2,18 @@ import { Collector, CollectorOptions, CollectorResult, RawVideoCandidate } from 
 import { GeneratedQueries } from '../services/query-generator.service';
 import { safeFetch } from '../utils/ssrf';
 import { logger } from '../utils/logger';
+import { ApifyClient } from '../providers/apify/client';
+import { CacheRepository } from '../db/repositories/cache.repository';
+import { downloadAndSaveThumbnail } from '../utils/thumbnail-storage';
 
 export interface InstagramCollectorConfig {
   token?: string;
+  apifyToken?: string;
+  actorId?: string;
   mode?: 'live' | 'mock';
   igUserId?: string;
+  apifyClient?: ApifyClient;
+  cacheRepo?: CacheRepository;
 }
 
 export class InstagramCollector implements Collector {
@@ -14,11 +21,20 @@ export class InstagramCollector implements Collector {
   private token?: string;
   private mode: 'live' | 'mock';
   private igUserId?: string;
+  private apifyClient: ApifyClient;
+  private actorId: string;
+  private cacheRepo: CacheRepository;
 
   constructor(config?: InstagramCollectorConfig) {
-    this.token = config?.token || process.env.INSTAGRAM_ACCESS_TOKEN;
+    this.token = config?.token !== undefined ? config.token : process.env.INSTAGRAM_ACCESS_TOKEN;
     this.mode = config?.mode || (process.env.MODE === 'mock' ? 'mock' : 'live');
     this.igUserId = config?.igUserId || process.env.INSTAGRAM_USER_ID;
+    this.apifyClient = config?.apifyClient || new ApifyClient(config?.apifyToken);
+    this.actorId =
+      config?.actorId ||
+      process.env.APIFY_INSTAGRAM_ACTOR ||
+      'apify/instagram-hashtag-scraper';
+    this.cacheRepo = config?.cacheRepo || new CacheRepository();
   }
 
   async collect(queries: GeneratedQueries, options: CollectorOptions): Promise<CollectorResult> {
@@ -64,7 +80,7 @@ export class InstagramCollector implements Collector {
         mediaUrl: `https://video.example.com/mock/reels/${id}.mp4`,
         caption: `Obsessed with this! Real review of the ${keyword}. Check this out ${tag1} ${tag2} #viral #foryou`,
         author: `@${author}`,
-        postedAt: new Date(Date.now() - (i + 1) * 3600 * 1000 * 4), // Staggered over recent days
+        postedAt: new Date(Date.now() - (i + 1) * 3600 * 1000 * 4),
         raw: {
           mockType: 'instagram_reel',
           likes: 1200 + i * 187,
@@ -86,19 +102,36 @@ export class InstagramCollector implements Collector {
   }
 
   private async collectLive(queries: GeneratedQueries, targetCount: number): Promise<CollectorResult> {
-    if (!this.token || this.token.trim() === '') {
-      logger.warn('InstagramCollector: INSTAGRAM_ACCESS_TOKEN not configured in live mode');
-      return {
-        source: 'instagram',
-        requested: targetCount,
-        collected: 0,
-        usable: 0,
-        shortfall: targetCount,
-        candidates: [],
-        error: 'INSTAGRAM_ACCESS_TOKEN is not configured in environment',
-      };
+    // PROVIDER ORDER:
+    // 1. Official Meta Graph API if token present
+    if (this.token && this.token.trim() !== '') {
+      logger.info('InstagramCollector: Using official Meta Graph API');
+      return this.collectGraphApi(queries, targetCount);
     }
 
+    // 2. Apify provider if Apify token present
+    if (this.apifyClient.hasToken()) {
+      logger.info({ actorId: this.actorId }, 'InstagramCollector: Using Apify data provider');
+      return this.collectApify(queries, targetCount);
+    }
+
+    // 3. Neither available: Clear failure with honest shortfall
+    logger.warn('InstagramCollector: No credentials found (neither INSTAGRAM_ACCESS_TOKEN nor APIFY_TOKEN)');
+    return {
+      source: 'instagram',
+      requested: targetCount,
+      collected: 0,
+      usable: 0,
+      shortfall: targetCount,
+      candidates: [],
+      error: 'Neither INSTAGRAM_ACCESS_TOKEN nor APIFY_TOKEN is configured in environment',
+    };
+  }
+
+  /**
+   * Official Meta Graph API collection path
+   */
+  private async collectGraphApi(queries: GeneratedQueries, targetCount: number): Promise<CollectorResult> {
     const candidates: RawVideoCandidate[] = [];
     const seenIds = new Set<string>();
     let lastError: string | undefined;
@@ -111,7 +144,6 @@ export class InstagramCollector implements Collector {
       if (candidates.length >= targetCount) break;
 
       try {
-        // Step 1: Search hashtag ID if user_id is provided
         const userId = this.igUserId || 'me';
         const searchUrl = `https://graph.facebook.com/v19.0/ig_hashtag_search?user_id=${userId}&q=${encodeURIComponent(
           tag
@@ -129,7 +161,6 @@ export class InstagramCollector implements Collector {
         const hashtagId = searchData.data?.[0]?.id;
         if (!hashtagId) continue;
 
-        // Step 2: Fetch recent media for the hashtag
         const mediaUrl = `https://graph.facebook.com/v19.0/${hashtagId}/recent_media?user_id=${userId}&fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,like_count,comments_count&access_token=${this.token}`;
         const mediaRes = await safeFetch(mediaUrl, { timeoutMs: 8000 });
 
@@ -138,19 +169,25 @@ export class InstagramCollector implements Collector {
           const items = mediaData.data || [];
 
           for (const item of items) {
-            // Filter strictly for VIDEO type
             if (item.media_type === 'VIDEO' && !seenIds.has(item.id)) {
               seenIds.add(item.id);
+
+              let thumbUrl = item.thumbnail_url;
+              if (thumbUrl) {
+                const saved = await downloadAndSaveThumbnail(thumbUrl, 'instagram', item.id);
+                if (saved) thumbUrl = saved.localUrl;
+              }
+
               candidates.push({
                 platform: 'instagram',
                 platformVideoId: item.id,
                 canonicalUrl: item.permalink || `https://www.instagram.com/reel/${item.id}/`,
-                thumbnailUrl: item.thumbnail_url,
+                thumbnailUrl: thumbUrl,
                 mediaUrl: item.media_url,
                 caption: item.caption,
                 author: item.username ? `@${item.username}` : undefined,
                 postedAt: item.timestamp ? new Date(item.timestamp) : undefined,
-                raw: item,
+                raw: { ...item, originalThumbnailUrl: item.thumbnail_url },
                 isMock: false,
               });
 
@@ -161,6 +198,158 @@ export class InstagramCollector implements Collector {
       } catch (err: any) {
         lastError = err.message;
         logger.warn({ err, tag }, 'Error querying Instagram Graph API for hashtag');
+      }
+    }
+
+    const usable = candidates.length;
+    const shortfall = Math.max(0, targetCount - usable);
+
+    return {
+      source: 'instagram',
+      requested: targetCount,
+      collected: candidates.length,
+      usable,
+      shortfall,
+      candidates,
+      error: shortfall > 0 && lastError ? lastError : undefined,
+    };
+  }
+
+  /**
+   * Apify Actor Provider collection path with caching, cost safety caps, and normalisation
+   */
+  private async collectApify(queries: GeneratedQueries, targetCount: number): Promise<CollectorResult> {
+    const candidates: RawVideoCandidate[] = [];
+    const seenIds = new Set<string>();
+    let lastError: string | undefined;
+
+    const maxItemsPerRun = parseInt(process.env.APIFY_MAX_ITEMS_PER_RUN || '40', 10);
+    const maxRunsPerSearch = parseInt(process.env.APIFY_MAX_RUNS_PER_SEARCH || '3', 10);
+
+    const hashtagsToSearch = queries.instagram.hashtags
+      .map((h) => h.replace(/^#/, '').trim())
+      .filter(Boolean);
+
+    let runsCount = 0;
+
+    for (const tag of hashtagsToSearch) {
+      if (candidates.length >= targetCount) break;
+      if (runsCount >= maxRunsPerSearch) {
+        logger.info(
+          { runsCount, maxRunsPerSearch },
+          'Reached maximum allowed Apify runs per search (cost safety cap)'
+        );
+        break;
+      }
+
+      const cacheKey = `apify:instagram:${tag.toLowerCase()}`;
+
+      // 1. Check 24-hour database cache
+      try {
+        const cached = await this.cacheRepo.get<RawVideoCandidate[]>(cacheKey);
+        if (cached && Array.isArray(cached) && cached.length > 0) {
+          logger.info({ tag, count: cached.length }, 'Using 24h cached Apify results for Instagram hashtag');
+          for (const item of cached) {
+            if (!seenIds.has(item.platformVideoId)) {
+              seenIds.add(item.platformVideoId);
+              candidates.push(item);
+              if (candidates.length >= targetCount) break;
+            }
+          }
+          continue;
+        }
+      } catch (cacheErr) {
+        logger.warn({ cacheErr }, 'Cache lookup failed, proceeding to query Apify');
+      }
+
+      // 2. Execute Apify actor run
+      runsCount++;
+      try {
+        const input = {
+          hashtags: [tag],
+          resultsType: 'reels',
+          resultsLimit: Math.min(targetCount - candidates.length + 5, maxItemsPerRun),
+        };
+
+        const rawItems = await this.apifyClient.callActorSync(this.actorId, input, {
+          timeoutSeconds: 60,
+          maxItems: maxItemsPerRun,
+        });
+
+        logger.info({ tag, itemsReceived: rawItems.length }, 'Received dataset items from Apify Instagram actor');
+
+        const tagCandidates: RawVideoCandidate[] = [];
+
+        for (const item of rawItems) {
+          // Normalisation:
+          // A. Must have usable ID
+          const rawId = item.id || item.shortCode;
+          if (!rawId) continue;
+          const id = String(rawId);
+
+          if (seenIds.has(id)) continue;
+
+          // B. Keep video items only (reject static single photos)
+          const isVideo =
+            item.type === 'Video' ||
+            item.type === 'Reel' ||
+            item.productType === 'clips' ||
+            Boolean(item.videoUrl) ||
+            Boolean(item.videoDuration);
+
+          if (!isVideo) continue;
+
+          // C. Must have a thumbnail
+          const originalThumb =
+            item.displayUrl ||
+            item.thumbnailUrl ||
+            (Array.isArray(item.images) && item.images[0]) ||
+            undefined;
+
+          if (!originalThumb) continue;
+
+          // D. Download and cache thumbnail locally (max 800px)
+          let finalThumbUrl = originalThumb;
+          try {
+            const saved = await downloadAndSaveThumbnail(originalThumb, 'instagram', id);
+            if (saved) {
+              finalThumbUrl = saved.localUrl;
+            }
+          } catch (thumbErr) {
+            logger.warn({ thumbErr, id }, 'Could not save local thumbnail copy, retaining remote URL');
+          }
+
+          const candidate: RawVideoCandidate = {
+            platform: 'instagram',
+            platformVideoId: id,
+            canonicalUrl: item.url || `https://www.instagram.com/reel/${item.shortCode || id}/`,
+            thumbnailUrl: finalThumbUrl,
+            mediaUrl: item.videoUrl || undefined,
+            caption: item.caption || '',
+            author: item.ownerUsername ? `@${item.ownerUsername}` : undefined,
+            postedAt: item.timestamp ? new Date(item.timestamp) : undefined,
+            raw: { ...item, originalThumbnailUrl: originalThumb },
+            isMock: false,
+          };
+
+          seenIds.add(id);
+          candidates.push(candidate);
+          tagCandidates.push(candidate);
+
+          if (candidates.length >= targetCount) break;
+        }
+
+        // Cache collected items for 24 hours (86,400s)
+        if (tagCandidates.length > 0) {
+          try {
+            await this.cacheRepo.set(cacheKey, tagCandidates, 86400);
+          } catch (cacheSetErr) {
+            logger.warn({ cacheSetErr, tag }, 'Failed to persist tag results to cache');
+          }
+        }
+      } catch (err: any) {
+        lastError = err.message;
+        logger.warn({ err: err.message, tag, actorId: this.actorId }, 'Apify Instagram collection failed');
       }
     }
 

@@ -35,3 +35,4 @@ export interface Collector {
   readonly source: 'instagram' | 'meta' | 'tiktok';
   collect(queries: GeneratedQueries, options: CollectorOptions): Promise<CollectorResult>;
 }
+

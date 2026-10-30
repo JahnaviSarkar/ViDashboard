@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { InstagramCollector } from '../src/collectors/instagram.collector';
 import { MetaAdLibraryCollector } from '../src/collectors/meta-ad-library.collector';
 import { TikTokCollector } from '../src/collectors/tiktok.collector';
+import { ApifyClient } from '../src/providers/apify/client';
 import { VideoRepository } from '../src/db/repositories/video.repository';
 import { SourceRunRepository } from '../src/db/repositories/source-run.repository';
 import { SearchRepository } from '../src/db/repositories/search.repository';
@@ -59,7 +60,11 @@ describe('Phase 3 Collectors & Shortfall Accounting', () => {
     });
 
     it('in live mode without token, gracefully reports shortfall 20 with clear error', async () => {
-      const collector = new InstagramCollector({ mode: 'live', token: '' });
+      const collector = new InstagramCollector({
+        mode: 'live',
+        token: '',
+        apifyClient: new ApifyClient(''),
+      });
       const result = await collector.collect(sampleQueries, {
         targetCount: 20,
         searchId: 'test-search-ig-live',
@@ -71,7 +76,7 @@ describe('Phase 3 Collectors & Shortfall Accounting', () => {
       expect(result.usable).toBe(0);
       expect(result.shortfall).toBe(20);
       expect(result.candidates.length).toBe(0);
-      expect(result.error).toContain('INSTAGRAM_ACCESS_TOKEN is not configured');
+      expect(result.error).toContain('configured in environment');
     });
   });
 
@@ -100,7 +105,11 @@ describe('Phase 3 Collectors & Shortfall Accounting', () => {
     });
 
     it('in live mode without token, gracefully reports shortfall 20 with clear error', async () => {
-      const collector = new MetaAdLibraryCollector({ mode: 'live', token: '' });
+      const collector = new MetaAdLibraryCollector({
+        mode: 'live',
+        token: '',
+        apifyClient: new ApifyClient(''),
+      });
       const result = await collector.collect(sampleQueries, {
         targetCount: 20,
         searchId: 'test-search-meta-live',
@@ -112,7 +121,7 @@ describe('Phase 3 Collectors & Shortfall Accounting', () => {
       expect(result.usable).toBe(0);
       expect(result.shortfall).toBe(20);
       expect(result.candidates.length).toBe(0);
-      expect(result.error).toContain('META_ACCESS_TOKEN is not configured');
+      expect(result.error).toContain('configured in environment');
     });
   });
 

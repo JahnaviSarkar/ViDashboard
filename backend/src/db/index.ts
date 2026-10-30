@@ -24,6 +24,12 @@ export function getPool(connectionString?: string): pg.Pool {
       connectionTimeoutMillis: 5000,
     });
 
+    pool.on('connect', (client) => {
+      client.query("SET client_encoding = 'UTF8'").catch((err) => {
+        logger.warn({ err }, 'Failed to set client_encoding to UTF8 on connect');
+      });
+    });
+
     pool.on('error', (err) => {
       logger.error({ err }, 'Unexpected error on idle PostgreSQL pool client');
     });

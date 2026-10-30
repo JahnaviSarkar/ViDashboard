@@ -30,7 +30,13 @@ export const envSchema = z.object({
   INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
   META_ACCESS_TOKEN: z.string().optional(),
   TIKTOK_ACCESS_TOKEN: z.string().optional(),
+  APIFY_TOKEN: z.string().optional(),
   APIFY_API_TOKEN: z.string().optional(),
+  APIFY_INSTAGRAM_ACTOR: z.string().default('apify/instagram-hashtag-scraper'),
+  APIFY_META_ADS_ACTOR: z.string().default('curious_coder/facebook-ads-library-scraper'),
+  APIFY_MAX_ITEMS_PER_RUN: z.coerce.number().int().positive().default(40),
+  APIFY_MAX_RUNS_PER_SEARCH: z.coerce.number().int().positive().default(3),
+  STORAGE_DIR: z.string().default('./storage'),
 
   MIN_MATCH_THRESHOLD: z.coerce.number().min(0).max(100).default(60),
   EMBEDDING_WEIGHT: z.coerce.number().min(0).max(1).default(0.4),

@@ -1,6 +1,8 @@
 import fastify, { FastifyInstance, FastifyServerOptions } from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
+import fs from 'fs';
+import path from 'path';
 import { randomUUID } from 'crypto';
 import { getConfig } from './config/env';
 import { logger } from './utils/logger';
@@ -8,6 +10,7 @@ import { handleFastifyError } from './utils/errors';
 import { healthRoutes } from './routes/health.route';
 import { sseRoutes } from './routes/sse.route';
 import { searchRoutes } from './routes/search.route';
+import { getThumbnailStorageDir } from './utils/thumbnail-storage';
 
 export function buildApp(opts: FastifyServerOptions = {}): FastifyInstance {
   const config = getConfig();
@@ -47,6 +50,34 @@ export function buildApp(opts: FastifyServerOptions = {}): FastifyInstance {
   app.register(healthRoutes);
   app.register(sseRoutes);
   app.register(searchRoutes);
+
+  // Serve locally cached thumbnails
+  app.get('/storage/thumbnails/:filename', async (request, reply) => {
+    const { filename } = request.params as { filename: string };
+    const safeName = path.basename(filename);
+    const thumbDir = getThumbnailStorageDir();
+    const filePath = path.join(thumbDir, safeName);
+
+    if (!fs.existsSync(filePath)) {
+      return reply.status(404).send({
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Thumbnail not found',
+          retryable: false,
+        },
+      });
+    }
+
+    const ext = path.extname(safeName).toLowerCase();
+    const mimeMap: Record<string, string> = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.webp': 'image/webp',
+    };
+    reply.type(mimeMap[ext] || 'image/jpeg');
+    return reply.send(fs.createReadStream(filePath));
+  });
 
   return app;
 }
