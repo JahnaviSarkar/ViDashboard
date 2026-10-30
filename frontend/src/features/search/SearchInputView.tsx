@@ -171,7 +171,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
               fontWeight: 500,
             }}
           >
-            💄 Fenty Beauty Gloss
+            Fenty Beauty Gloss
           </button>
           <button
             type="button"
@@ -187,7 +187,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
               fontWeight: 500,
             }}
           >
-            👕 Represent 247 Tank
+            Represent 247 Tank
           </button>
           <button
             type="button"
@@ -203,7 +203,7 @@ export const SearchInputView: React.FC<SearchInputViewProps> = ({
               fontWeight: 500,
             }}
           >
-            🔋 Anker Power Bank
+            Anker Power Bank
           </button>
         </div>
       </div>

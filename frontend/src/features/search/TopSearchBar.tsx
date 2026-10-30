@@ -183,7 +183,7 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({ onSearch, isLoading 
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
           }}
         >
-          <span>💄 Fenty Beauty Gloss</span>
+          <span>Fenty Beauty Gloss</span>
           <LinkIcon size={11} color="#93ABD9" />
         </button>
 
@@ -205,7 +205,7 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({ onSearch, isLoading 
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
           }}
         >
-          <span>👕 Represent 247 Tank</span>
+          <span>Represent 247 Tank</span>
           <LinkIcon size={11} color="#E7BEF8" />
         </button>
       </div>
