@@ -11,18 +11,25 @@ export * from './gemini.provider';
 export function getVisionProvider(): VisionProvider {
   const config = getConfig();
 
-  if (config.MODE === 'mock' || config.VISION_PROVIDER === 'mock') {
-    logger.info('Using MockVisionProvider (mock mode configured)');
+  if (config.MODE === 'mock') {
+    logger.info('Using MockVisionProvider (MODE=mock configured)');
     return new MockVisionProvider();
   }
 
-  if (config.VISION_PROVIDER === 'gemini') {
-    if (!config.GEMINI_API_KEY) {
-      logger.warn('GEMINI_API_KEY not configured. Falling back to MockVisionProvider');
+  if (config.MODE === 'live') {
+    if (config.VISION_PROVIDER === 'mock') {
+      logger.info('Using MockVisionProvider (explicitly requested VISION_PROVIDER=mock)');
       return new MockVisionProvider();
     }
-    return new GeminiVisionProvider(config.GEMINI_API_KEY);
+
+    if (!config.GEMINI_API_KEY || config.GEMINI_API_KEY.trim() === '') {
+      throw new Error(
+        'FATAL: GEMINI_API_KEY is missing while MODE=live. Will not silently use mock provider. Set GEMINI_API_KEY or set MODE=mock.'
+      );
+    }
+
+    return new GeminiVisionProvider(config.GEMINI_API_KEY, config.GEMINI_MODEL);
   }
 
-  return new MockVisionProvider();
+  throw new Error(`Unsupported configuration: MODE=${config.MODE}`);
 }

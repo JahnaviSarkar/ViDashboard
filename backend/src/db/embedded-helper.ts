@@ -55,7 +55,8 @@ export async function ensurePostgresRunning(preferredPort: number = 5432): Promi
       await embeddedServer.start();
       logger.info({ port, databaseDir }, 'Embedded PostgreSQL started successfully');
     } catch (err: any) {
-      if (err.message && err.message.includes(`${port}`)) {
+      const errMsg = err?.message || String(err || '');
+      if (errMsg.includes(`${port}`)) {
         logger.warn(`Port ${port} in use, trying embedded PostgreSQL on port ${port + 1}`);
         return ensurePostgresRunning(port + 1);
       }

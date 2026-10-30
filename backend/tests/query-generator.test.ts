@@ -59,4 +59,29 @@ describe('Query Generation Service and Expansion Tiers', () => {
     expect(queries.expansionTiers.tier3.length).toBeGreaterThan(0);
     expect(queries.expansionTiers.tier3.some((t) => t.includes('toys') || t.includes('pretendplay'))).toBe(true);
   });
+
+  it('filters out generic mock hashtags like #compositeblendproducts and #ergonomicpremium', () => {
+    const analysisWithGenericProps: ProductAnalysis = {
+      productType: 'Item',
+      category: 'General',
+      dominantColour: 'Neutral',
+      secondaryColours: [],
+      printsAndGraphics: [],
+      logos: [],
+      visibleText: [],
+      material: 'Composite Blend',
+      shape: 'Standard',
+      distinguishingAttributes: ['Ergonomic premium construction', 'Minimalist aesthetic'],
+      attributeConfidence: {},
+      isTextDerived: true,
+      isMock: true,
+    };
+
+    const queries = generator.generate(analysisWithGenericProps);
+
+    expect(queries.instagram.hashtags).not.toContain('#compositeblendproducts');
+    expect(queries.instagram.hashtags).not.toContain('#compositeblend');
+    expect(queries.instagram.hashtags).not.toContain('#ergonomicpremium');
+    expect(queries.instagram.hashtags).not.toContain('#ergonomicpremiumproducts');
+  });
 });

@@ -64,7 +64,19 @@ export class QueryGeneratorService {
     hashtagsSet.add('#productfinds');
     hashtagsSet.add('#musthaves');
 
-    const rankedHashtags = Array.from(hashtagsSet).slice(0, 15);
+    // Filter out banned/generic mock hashtags
+    const bannedHashtags = new Set([
+      '#compositeblendproducts',
+      '#compositeblend',
+      '#ergonomicpremium',
+      '#ergonomicpremiumproducts',
+      '#minimalistaesthetic',
+      '#minimalistaestheticproducts',
+    ]);
+
+    const rankedHashtags = Array.from(hashtagsSet)
+      .filter((tag) => !bannedHashtags.has(tag))
+      .slice(0, 15);
 
     // 2. Build Instagram keyword queries
     const igKeywords: string[] = [];

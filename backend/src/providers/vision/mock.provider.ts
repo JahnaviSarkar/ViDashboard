@@ -15,8 +15,8 @@ export class MockVisionProvider implements VisionProvider {
     let productType = title;
     let dominantColour = 'Pastel Neutral';
     let secondaryColours = ['Soft Cream', 'Lilac Mist'];
-    let material = 'Composite Blend';
-    let shape = 'Rectangular streamlined profile';
+    let material = 'Refined Synthetic';
+    let shape = 'Contemporary ergonomic silhouette';
     const distinguishingAttributes: string[] = [];
     const logos: string[] = [];
     const visibleText: string[] = [];
@@ -54,8 +54,24 @@ export class MockVisionProvider implements VisionProvider {
       material = '18/8 Pro-Grade Stainless Steel';
       shape = 'Cylindrical with loop carry cap';
       distinguishingAttributes.push('Double-wall vacuum insulation', 'Laser-etched brandmark');
+    } else if (lower.includes('keyboard') || lower.includes('keycap') || lower.includes('switch')) {
+      category = 'Electronics / Peripherals';
+      productType = 'Custom Mechanical Keyboard';
+      dominantColour = 'Charcoal Slate';
+      secondaryColours = ['Accent Cyan', 'Warm White'];
+      material = 'CNC Anodized Aluminium';
+      shape = 'Compact angled tenkeyless profile';
+      distinguishingAttributes.push('Hot-swappable tactile switches', 'RGB per-key illumination');
+    } else if (lower.includes('gloss') || lower.includes('lip') || lower.includes('beauty') || lower.includes('cosmetic')) {
+      category = 'Beauty / Lips';
+      productType = 'Universal Lip Gloss';
+      dominantColour = 'Rose Gold Shimmer';
+      secondaryColours = ['Champagne Nude'];
+      material = 'Hydrating Gloss Formula';
+      shape = 'Prismatic cylindrical wand applicator';
+      distinguishingAttributes.push('Non-sticky high-shine finish', 'Peach vanilla scent');
     } else {
-      distinguishingAttributes.push('Ergonomic premium construction', 'Minimalist aesthetic');
+      distinguishingAttributes.push('Precision engineered', 'Matte finish');
     }
 
     const rawAnalysis: ProductAnalysis = {
@@ -77,6 +93,7 @@ export class MockVisionProvider implements VisionProvider {
         shape: 0.91,
       },
       isTextDerived: !hasImage,
+      isMock: true,
     };
 
     return productAnalysisSchema.parse(rawAnalysis);

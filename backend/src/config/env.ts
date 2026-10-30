@@ -24,6 +24,7 @@ export const envSchema = z.object({
   UPLOAD_DIR: z.string().default('./uploads'),
 
   VISION_PROVIDER: z.enum(['gemini', 'mock']).default('gemini'),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   GEMINI_API_KEY: z.string().optional(),
 
   INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
@@ -35,6 +36,16 @@ export const envSchema = z.object({
   EMBEDDING_WEIGHT: z.coerce.number().min(0).max(1).default(0.4),
   RUBRIC_WEIGHT: z.coerce.number().min(0).max(1).default(0.6),
   DHASH_THRESHOLD: z.coerce.number().int().min(0).default(10),
+}).superRefine((data, ctx) => {
+  if (data.MODE === 'live' && data.VISION_PROVIDER === 'gemini') {
+    if (!data.GEMINI_API_KEY || data.GEMINI_API_KEY.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'GEMINI_API_KEY is required when MODE=live and VISION_PROVIDER=gemini. Set GEMINI_API_KEY or switch MODE=mock.',
+        path: ['GEMINI_API_KEY'],
+      });
+    }
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

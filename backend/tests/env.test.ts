@@ -14,6 +14,7 @@ describe('Environment Configuration Validation', () => {
     const config = validateEnv({
       ...baseValidEnv,
       VISION_PROVIDER: 'gemini',
+      GEMINI_API_KEY: 'test-valid-key',
       EMBEDDING_WEIGHT: '0.4',
       RUBRIC_WEIGHT: '0.6',
     });
@@ -22,9 +23,33 @@ describe('Environment Configuration Validation', () => {
     expect(config.NODE_ENV).toBe('test');
     expect(config.PORT).toBe(3001);
     expect(config.MODE).toBe('live');
+    expect(config.GEMINI_MODEL).toBe('gemini-2.5-flash');
+    expect(config.GEMINI_API_KEY).toBe('test-valid-key');
     expect(config.MIN_MATCH_THRESHOLD).toBe(60);
     expect(config.EMBEDDING_WEIGHT).toBe(0.4);
     expect(config.RUBRIC_WEIGHT).toBe(0.6);
+  });
+
+  it('fails fast when MODE=live, VISION_PROVIDER=gemini, and GEMINI_API_KEY is missing', () => {
+    expect(() => {
+      validateEnv({
+        ...baseValidEnv,
+        MODE: 'live',
+        VISION_PROVIDER: 'gemini',
+        GEMINI_API_KEY: '',
+      });
+    }).toThrow(/GEMINI_API_KEY is required when MODE=live/);
+  });
+
+  it('allows missing GEMINI_API_KEY when MODE=mock', () => {
+    const config = validateEnv({
+      ...baseValidEnv,
+      MODE: 'mock',
+      VISION_PROVIDER: 'mock',
+      GEMINI_API_KEY: undefined,
+    });
+    expect(config.MODE).toBe('mock');
+    expect(config.GEMINI_API_KEY).toBeUndefined();
   });
 
   it('fails fast and throws when DATABASE_URL is missing or invalid', () => {

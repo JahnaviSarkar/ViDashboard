@@ -76,7 +76,7 @@ describe('Image Brain Vision Provider & Schema Validation', () => {
     }
   });
 
-  it('MockVisionProvider produces rich structured attributes with image buffer', async () => {
+  it('MockVisionProvider produces rich structured attributes with image buffer and labels isMock: true', async () => {
     const fakeImageBuffer = Buffer.from('FAKE_IMAGE_BYTES_12345');
 
     const result = await mockProvider.analyze({
@@ -89,10 +89,11 @@ describe('Image Brain Vision Provider & Schema Validation', () => {
     expect(result.category).toContain('Toys & Games');
     expect(result.material).toContain('Wood');
     expect(result.isTextDerived).toBe(false);
+    expect(result.isMock).toBe(true);
     expect(result.attributeConfidence.productType).toBeGreaterThan(0.8);
   });
 
-  it('MockVisionProvider flags keyword-only searches as text-derived', async () => {
+  it('MockVisionProvider flags keyword-only searches as text-derived and isMock: true', async () => {
     const result = await mockProvider.analyze({
       title: 'Ergonomic Commuter Backpack',
       description: 'Water-resistant roll-top backpack',
@@ -100,5 +101,6 @@ describe('Image Brain Vision Provider & Schema Validation', () => {
 
     expect(result.productType).toContain('Backpack');
     expect(result.isTextDerived).toBe(true);
+    expect(result.isMock).toBe(true);
   });
 });
