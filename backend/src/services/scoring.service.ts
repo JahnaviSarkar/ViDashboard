@@ -522,19 +522,58 @@ Output strictly raw valid JSON array, no markdown backticks.`,
     },
     candidates: CandidateVideo[]
   ): ScoredCandidate[] {
+    const productStr = `${product.title} ${product.analysis.productType} ${product.analysis.category} ${product.analysis.material || ''}`.toLowerCase();
+    const isToyOrWood =
+      productStr.includes('balance') ||
+      productStr.includes('board') ||
+      productStr.includes('wood') ||
+      productStr.includes('toy') ||
+      productStr.includes('montessori') ||
+      productStr.includes('waldorf') ||
+      productStr.includes('rocker');
+
+    const coreToyConcepts = ['wood', 'balance', 'board', 'montessori', 'toddler', 'kids', 'play', 'rocker', 'beech', 'birch', 'waldorf', 'climb'];
+
     return candidates.map((cand) => {
       const evidence = cand.evidence || (cand.thumbnailUrl ? 'thumbnail' : 'caption_only');
       const fallback = this.evaluateFallbackRubric(product, cand);
       const tokenSim = this.computeTokenSimilarity(product, cand);
 
-      const rawScore =
+      let rawScore =
         this.embeddingWeight * tokenSim +
         this.rubricWeight * fallback.rubricScore +
         fallback.bonuses -
         fallback.penalties;
 
-      let finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
       let explanation = fallback.explanation;
+      const text = `${cand.caption || ''} ${cand.author || ''}`.toLowerCase();
+
+      // Rule 1 & 2 for toy/wooden products: Tighten relevance thresholds & honest scoring
+      if (isToyOrWood) {
+        const hasSemanticOverlap = coreToyConcepts.some((kw) => text.includes(kw));
+        const hasDirectMaterial = text.includes('wood') || text.includes('birch') || text.includes('beech') || text.includes('plywood');
+        const hasDirectCategory = text.includes('balance') || text.includes('rocker') || text.includes('board') || text.includes('montessori');
+
+        if (!hasSemanticOverlap) {
+          // Zero semantic overlap: drop to < 35% and mark as Poor Match
+          rawScore = Math.min(25, rawScore);
+          explanation = 'Poor Match: Candidate video exhibits zero semantic or visual overlap with wooden Montessori play or balance board concepts.';
+        } else if (hasDirectMaterial && hasDirectCategory) {
+          // Direct material + category match: high score (> 70%), scaled by token overlap
+          rawScore = Math.max(78, Math.min(96, rawScore + 15));
+          explanation = `High Match: Directly demonstrates ${product.analysis.productType || 'Wooden Balance Board'} with natural wood finish and active Montessori play.`;
+        } else if (hasDirectMaterial || hasDirectCategory) {
+          // Partial category or material attribute only: capped below 70%
+          rawScore = Math.min(65, Math.max(45, rawScore));
+          explanation = `Partial Match: Demonstrates active children's movement or toy concepts, but lacks full material or curved rocker silhouette verification.`;
+        } else {
+          // Generic play/kids without direct material or category: drop to < 35%
+          rawScore = Math.min(32, rawScore);
+          explanation = 'Poor Match: Missing direct category and material attributes for wooden balance board.';
+        }
+      }
+
+      let finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
       // Cap at 40 if caption_only
       if (evidence === 'caption_only') {
@@ -584,6 +623,7 @@ Output strictly raw valid JSON array, no markdown backticks.`,
     const brand = (product.brand || '').toLowerCase();
     const pType = (product.analysis.productType || '').toLowerCase();
     const color = (product.analysis.dominantColour || '').toLowerCase();
+    const productStr = `${product.title} ${pType} ${product.analysis.category || ''} ${product.analysis.material || ''}`.toLowerCase();
 
     // Check for negative mismatch terms (e.g. wide leg pant vs tank top)
     const isPantWhenTargetIsTop =
@@ -602,6 +642,33 @@ Output strictly raw valid JSON array, no markdown backticks.`,
         bonuses: 0,
         penalties: 20,
         explanation: 'Visual evidence depicts wide leg pants/sweatpants rather than the target oversized sleeveless tank top.',
+      };
+    }
+
+    const isToyOrWood =
+      productStr.includes('balance') ||
+      productStr.includes('board') ||
+      productStr.includes('wood') ||
+      productStr.includes('toy') ||
+      productStr.includes('montessori') ||
+      productStr.includes('waldorf') ||
+      productStr.includes('rocker');
+
+    const coreToyConcepts = ['wood', 'balance', 'board', 'montessori', 'toddler', 'kids', 'play', 'rocker', 'beech', 'birch', 'waldorf', 'climb'];
+    const hasSemanticOverlap = coreToyConcepts.some((kw) => text.includes(kw));
+
+    if (isToyOrWood && !hasSemanticOverlap) {
+      return {
+        rubricScore: 15,
+        verdicts: {
+          productType: 'mismatch',
+          color: 'mismatch',
+          brand: 'mismatch',
+          relevance: 'mismatch',
+        },
+        bonuses: 0,
+        penalties: 25,
+        explanation: 'Poor Match: Candidate video exhibits zero semantic or visual overlap with wooden Montessori play or balance board concepts.',
       };
     }
 

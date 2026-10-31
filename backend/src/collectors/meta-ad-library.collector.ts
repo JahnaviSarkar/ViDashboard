@@ -75,7 +75,111 @@ export class MetaAdLibraryCollector implements Collector {
     const searchTerms = queries.meta.searchTerms.length > 0 ? queries.meta.searchTerms : ['Product Sale'];
     const brandTerm = searchTerms[0] || 'Brand';
 
-    const brandPages = [
+    const queryStr = [
+      ...searchTerms,
+      ...(queries.instagram?.keywords || []),
+      ...(queries.instagram?.hashtags || []),
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    const isToyOrWood =
+      queryStr.includes('balance') ||
+      queryStr.includes('board') ||
+      queryStr.includes('wood') ||
+      queryStr.includes('toy') ||
+      queryStr.includes('montessori') ||
+      queryStr.includes('waldorf') ||
+      queryStr.includes('rocker') ||
+      queryStr.includes('climb') ||
+      queryStr.includes('sensory') ||
+      queryStr.includes('toddler') ||
+      queryStr.includes('kid');
+
+    const toyMetaPool = [
+      {
+        pageName: 'Kinderfeets Active Play',
+        caption: `Certified FSC European Beechwood: The Award-Winning Curved Balance Board.\n\nDesigned for active toddlers and growing kids. Supports up to 485 lbs. Use as a rocker, slide, bridge, or reading nook. Non-toxic water-based finish with optional felt backing. Shop now for 20% off!`,
+      },
+      {
+        pageName: 'Wobbel Montessori Toys',
+        caption: `Inspire Open-Ended Movement: The Original Curved Wooden Rocker.\n\nStimulates balance, physical strength, and boundless creativity. Handcrafted from sustainable pressed beechwood with natural child-safe lacquer. Free shipping on family starter sets today.`,
+      },
+      {
+        pageName: 'Montessori Woodcraft Co.',
+        caption: `Screen-Free Active Play For Indoors: Heavy Duty Wooden Balance Board.\n\nGive your toddler the joy of movement! Smooth chamfered edges, zero splinters, and tested to international child toy safety standards. Tap Shop Now to explore our natural wood collection.`,
+      },
+      {
+        pageName: 'Bannor Heirloom Toys',
+        caption: `Heirloom Quality Meets Active Learning: Handcrafted Curved Balance Rocker.\n\nInvest in toys that last generations. Crafted with premium birch plywood and organic beeswax finish. Promotes gross motor development and active sensory exploration. Order today!`,
+      },
+      {
+        pageName: 'Little Climber & Rocker',
+        caption: `Build Core Strength & Balance: The Ultimate Toddler Movement Board.\n\nRecommended by pediatric occupational therapists for balance and coordination. Sturdy curved arch with protective felt backing to safeguard hardwood floors. 30-Day Money-Back Guarantee.`,
+      },
+      {
+        pageName: 'Waldorf Home Studio',
+        caption: `Endless Imagination In A Single Curve: Wooden Rocker & Balance Board.\n\nIs it a bridge? A slide? A rocking cradle? Your child decides! 100% natural wood, eco-friendly waterborne glaze, and built for daily active play. Claim your seasonal discount now.`,
+      },
+      {
+        pageName: 'Sprout Kids Active',
+        caption: `Promote Physical Agility Indoors: Natural Curved Balance Board.\n\nRainy days don't have to mean screens. Our wooden rocker board burns energy and builds coordination. Holds adults up to 350 lbs too! Tap to shop the new natural wood edition.`,
+      },
+      {
+        pageName: 'Sensory Play Essentials',
+        caption: `Pediatric OT Approved: Sensory Balance Rocker Board For Kids.\n\nEnhance vestibular stimulation and proprioceptive feedback with gentle rocking and balancing. Safe, smooth, and sustainable beechwood construction. Explore the collection today.`,
+      },
+      {
+        pageName: 'Modern Nursery Studio',
+        caption: `Aesthetic Playroom Must-Have: Minimalist Wooden Balance Board.\n\nNeutral Scandinavian aesthetic meets heavy-duty toddler active play. Fits seamlessly into any modern nursery or living room. Rated 4.9/5 by over 3,000 Montessori parents.`,
+      },
+      {
+        pageName: 'EcoWood Children',
+        caption: `Sustainably Sourced Birch Rocker: Designed for Independent Play.\n\nNo plastic, no batteries, no overstimulation. Just natural curved birch wood and your child's imagination. Safe for ages 18 months and up. Tap Shop Now for holiday bundles.`,
+      },
+      {
+        pageName: 'KinderMovement Gear',
+        caption: `Develop Coordination Faster: Active Wooden Rocker & Balance Beam.\n\nHelp toddlers master gross-motor balance with our ergonomic curved wood board. Smooth curved contours protect little hands and feet. Fast 2-day delivery across the country.`,
+      },
+      {
+        pageName: 'Heirloom Playroom Co.',
+        caption: `Handcrafted Active Toys: Beechwood Rocker & Stepping Bridge.\n\nEngineered with 11 layers of pressed European beechwood. Extremely durable, smooth-sanded, and non-toxic. Tap Shop Now to upgrade your child's playroom.`,
+      },
+      {
+        pageName: 'ActiveToddler Brand',
+        caption: `Say Goodbye To Screen Meltdowns: Active Wooden Balance Board.\n\nKeep little ones engaged, moving, and practicing balance for hours. Works on carpet, tile, or hardwood. Certified ASTM and EN71 child toy safety compliant.`,
+      },
+      {
+        pageName: 'Montessori Living Direct',
+        caption: `Open-Ended Learning Starts Here: Curved Wood Balance Rocker.\n\nFoster independence and physical strength with the classic Waldorf curved board. Lightweight enough for kids to carry, sturdy enough for adults. Shop today's flash sale!`,
+      },
+      {
+        pageName: 'Nordic Wood Toys',
+        caption: `Timeless Scandinavian Craftsmanship: Natural Rocker Board.\n\nHandcrafted with love from sustainably harvested FSC birch. Beveled edges, warm natural grain, and non-slip felt underlayer. Explore all 6 wool felt colorways now.`,
+      },
+      {
+        pageName: 'Playful Minds Kids',
+        caption: `The Multi-Functional Toy Every Parent Recommends: Wooden Rocker Board.\n\nRocker, step stool, balancing beam, and lounge chair. Watch your child discover 100 ways to play. Join over 20,000 happy families who trust our wooden play gear.`,
+      },
+      {
+        pageName: 'Little Explorers Studio',
+        caption: `Safe, Sturdy, Child-Tested: Curved Balance Board with Felt.\n\nSmooth wood surface, rounded corners, and premium acoustic felt that prevents floor scratches. 100% satisfaction guaranteed with free returns.`,
+      },
+      {
+        pageName: 'PureWood Parenting',
+        caption: `Eco-Conscious Active Play: Natural Birch Balance Board.\n\nGive the gift of movement. Hand-finished with organic plant-based oils and child-safe sealant. Shop our best-selling wooden active toy today.`,
+      },
+      {
+        pageName: 'Creative Toddler Gear',
+        caption: `From Balance To Forts: The Most Versatile Toy In Your Home.\n\nEncourage active physical play and gross motor development without the plastic clutter. Tested up to 400 lbs. Tap to see why parents love our curved rocker board.`,
+      },
+      {
+        pageName: 'Balance & Bloom Co.',
+        caption: `Mindful Movement For Little Ones: The Original Wooden Rocker.\n\nSupport sensory development, core posture, and creative confidence. Crafted from 100% sustainably farmed beech. Tap Shop Now for exclusive introductory pricing.`,
+      },
+    ];
+
+    const genericBrandPages = [
       `${brandTerm} Official`,
       `${brandTerm} Global Store`,
       `${brandTerm} Essentials`,
@@ -86,7 +190,7 @@ export class MetaAdLibraryCollector implements Collector {
       'Global Brand Outlet',
     ];
 
-    const hooks = [
+    const genericHooks = [
       'Limited Time Exclusive: Experience the difference.',
       'Best Seller Spotlight: Designed for modern lifestyles.',
       'Unbeatable comfort and premium design. Shop now for 20% off!',
@@ -119,30 +223,54 @@ export class MetaAdLibraryCollector implements Collector {
 
     for (let i = 0; i < targetCount; i++) {
       const adId = `mock_meta_ad_${(i + 1).toString().padStart(3, '0')}`;
-      const term = searchTerms[i % searchTerms.length];
-      const pageName = brandPages[i % brandPages.length];
-      const hook = hooks[i % hooks.length];
       const thumbFilename = localThumbs[i % localThumbs.length];
 
-      candidates.push({
-        platform: 'meta',
-        platformVideoId: adId,
-        canonicalUrl: `https://www.facebook.com/ads/library/?id=${adId}`,
-        thumbnailUrl: `/storage/thumbnails/${thumbFilename}`,
-        mediaUrl: `https://video.example.com/mock/ads/${adId}.mp4`,
-        caption: `${hook}\n\nDiscover the all-new ${term}. Tap Shop Now to claim the limited seasonal bundle.`,
-        author: pageName,
-        postedAt: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6),
-        raw: {
-          adId,
-          pageName,
-          publisherPlatforms: ['facebook', 'instagram', 'audience_network'],
-          adCreationTime: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6).toISOString(),
-          currency: 'USD',
-          estimatedSpend: { lower: 100 * (i + 1), upper: 500 * (i + 1) },
-        },
-        isMock: true,
-      });
+      if (isToyOrWood) {
+        const item = toyMetaPool[i % toyMetaPool.length];
+        candidates.push({
+          platform: 'meta',
+          platformVideoId: adId,
+          canonicalUrl: `https://www.facebook.com/ads/library/?id=${adId}`,
+          thumbnailUrl: `/storage/thumbnails/${thumbFilename}`,
+          mediaUrl: `https://video.example.com/mock/ads/${adId}.mp4`,
+          caption: item.caption,
+          author: item.pageName,
+          postedAt: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6),
+          raw: {
+            adId,
+            pageName: item.pageName,
+            publisherPlatforms: ['facebook', 'instagram', 'audience_network'],
+            adCreationTime: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6).toISOString(),
+            currency: 'USD',
+            estimatedSpend: { lower: 250 * (i + 1), upper: 900 * (i + 1) },
+          },
+          isMock: true,
+        });
+      } else {
+        const term = searchTerms[i % searchTerms.length];
+        const pageName = genericBrandPages[i % genericBrandPages.length];
+        const hook = genericHooks[i % genericHooks.length];
+
+        candidates.push({
+          platform: 'meta',
+          platformVideoId: adId,
+          canonicalUrl: `https://www.facebook.com/ads/library/?id=${adId}`,
+          thumbnailUrl: `/storage/thumbnails/${thumbFilename}`,
+          mediaUrl: `https://video.example.com/mock/ads/${adId}.mp4`,
+          caption: `${hook}\n\nDiscover the all-new ${term}. Tap Shop Now to claim the limited seasonal bundle.`,
+          author: pageName,
+          postedAt: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6),
+          raw: {
+            adId,
+            pageName,
+            publisherPlatforms: ['facebook', 'instagram', 'audience_network'],
+            adCreationTime: new Date(Date.now() - (i + 1) * 3600 * 1000 * 6).toISOString(),
+            currency: 'USD',
+            estimatedSpend: { lower: 100 * (i + 1), upper: 500 * (i + 1) },
+          },
+          isMock: true,
+        });
+      }
     }
 
     return {
