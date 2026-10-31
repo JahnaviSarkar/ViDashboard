@@ -56,7 +56,17 @@ export function buildApp(opts: FastifyServerOptions = {}): FastifyInstance {
     const { filename } = request.params as { filename: string };
     const safeName = path.basename(filename);
     const thumbDir = getThumbnailStorageDir();
-    const filePath = path.join(thumbDir, safeName);
+    let filePath = path.join(thumbDir, safeName);
+
+    if (!fs.existsSync(filePath)) {
+      const rootFallback = path.resolve(process.cwd(), '../storage/thumbnails', safeName);
+      const cwdFallback = path.resolve(process.cwd(), 'storage/thumbnails', safeName);
+      if (fs.existsSync(rootFallback)) {
+        filePath = rootFallback;
+      } else if (fs.existsSync(cwdFallback)) {
+        filePath = cwdFallback;
+      }
+    }
 
     if (!fs.existsSync(filePath)) {
       return reply.status(404).send({

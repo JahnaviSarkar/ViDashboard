@@ -1,10 +1,12 @@
 import PgBoss from 'pg-boss';
 import { getConfig } from '../config/env';
 import { logger } from '../utils/logger';
+import { PipelineOrchestratorService } from '../services/pipeline-orchestrator.service';
 
 export const SEARCH_PIPELINE_QUEUE = 'search-pipeline';
 
 let bossInstance: PgBoss | null = null;
+const orchestrator = new PipelineOrchestratorService();
 
 export async function initBoss(connectionString?: string): Promise<PgBoss> {
   if (bossInstance) {
@@ -41,8 +43,6 @@ export async function initBoss(connectionString?: string): Promise<PgBoss> {
         continue;
       }
       try {
-        const { PipelineOrchestratorService } = await import('../services/pipeline-orchestrator.service');
-        const orchestrator = new PipelineOrchestratorService();
         await orchestrator.execute(searchId);
       } catch (err) {
         logger.error({ err, searchId, jobId: job.id }, 'Error executing pipeline job in worker');

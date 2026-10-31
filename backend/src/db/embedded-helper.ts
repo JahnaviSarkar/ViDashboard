@@ -12,7 +12,7 @@ const workspaceDataDir = path.resolve(__dirname, '../../../data/postgres-data');
 let embeddedServer: any = null;
 
 export async function ensurePostgresRunning(preferredPort: number = 5432): Promise<string> {
-  const defaultUrl = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${preferredPort}/vidashboard`;
+  const defaultUrl = process.env.DATABASE_URL || `postgresql://postgres:postgres@127.0.0.1:${preferredPort}/vidashboard`;
 
   // 1. First test if an existing PostgreSQL instance is reachable
   const testClient = new pg.Client({
@@ -98,7 +98,7 @@ export async function ensurePostgresRunning(preferredPort: number = 5432): Promi
       // Database might already exist
     }
 
-    const connectionString = `postgresql://postgres:postgres@localhost:${port}/vidashboard`;
+    const connectionString = `postgresql://postgres:postgres@127.0.0.1:${port}/vidashboard`;
     process.env.DATABASE_URL = connectionString;
     return connectionString;
   }
