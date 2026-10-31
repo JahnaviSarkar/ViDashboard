@@ -24,7 +24,7 @@ export const PipelineProgressView: React.FC<PipelineProgressViewProps> = ({
   onCompleted,
   onCancel,
 }) => {
-  const { connectionStatus, stages, events, currentStage, error, isComplete, reconnect } = useSSE(searchId);
+  const { stages, events, currentStage, error, isComplete, reconnect } = useSSE(searchId);
   const [showEventLog, setShowEventLog] = useState(false);
 
   // Auto-complete trigger when finished
@@ -45,30 +45,6 @@ export const PipelineProgressView: React.FC<PipelineProgressViewProps> = ({
       {/* Top Status Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              SEARCH ID: {searchId.slice(0, 8)}...{searchId.slice(-4)}
-            </span>
-            <Badge
-              variant={
-                isComplete
-                  ? 'success'
-                  : error
-                  ? 'danger'
-                  : connectionStatus === 'connected'
-                  ? 'blueberry'
-                  : 'neutral'
-              }
-            >
-              {isComplete
-                ? 'Discovery Complete'
-                : error
-                ? 'Error Occurred'
-                : connectionStatus === 'connected'
-                ? 'Processing Stream'
-                : 'Connecting SSE'}
-            </Badge>
-          </div>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Pipeline Progress ({progressPercent}%)
           </h2>
